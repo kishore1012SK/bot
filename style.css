@@ -1,0 +1,1082 @@
+/* ==========================================================================
+   21st Academy Career Guidance Chatbot CSS
+   Aesthetic: Premium Glassmorphism & High-tech Slate Dark Theme
+   ========================================================================== */
+
+/* --- Custom Properties / CSS Variables --- */
+:root {
+    /* Color Palette - Indigo & Purple gradients with Slate backgrounds */
+    --bg-primary: #0b0f19;
+    --bg-secondary: #131b2e;
+    --bg-surface: #1e293b;
+    --bg-surface-glass: rgba(30, 41, 59, 0.6);
+    --border-color: rgba(255, 255, 255, 0.08);
+    --border-color-focus: rgba(99, 102, 241, 0.4);
+    
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    
+    --primary: #6366f1; /* Indigo */
+    --primary-hover: #4f46e5;
+    --primary-light: rgba(99, 102, 241, 0.15);
+    
+    --secondary: #a855f7; /* Purple */
+    --secondary-hover: #9333ea;
+    
+    --gradient-primary: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    --gradient-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+    
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    
+    /* Layout & Animation variables */
+    --sidebar-width: 340px;
+    --header-height: 80px;
+    --footer-height: 85px;
+    --border-radius-sm: 8px;
+    --border-radius-md: 12px;
+    --border-radius-lg: 20px;
+    
+    --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- Reset & Base Styles --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+/* --- Scrollbar Customizations --- */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-light);
+}
+
+/* --- Layout --- */
+.app-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+    background: radial-gradient(circle at 75% 25%, rgba(99, 102, 241, 0.08) 0%, transparent 45%),
+                radial-gradient(circle at 15% 80%, rgba(168, 85, 247, 0.06) 0%, transparent 40%);
+}
+
+/* ==========================================================================
+   Sidebar Styles (Academy Portal)
+   ========================================================================== */
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    z-index: 100;
+    transition: transform var(--transition-normal);
+}
+
+.sidebar-header {
+    height: var(--header-height);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    width: 42px;
+    height: 42px;
+    background: var(--gradient-primary);
+    border-radius: var(--border-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+    box-shadow: var(--gradient-glow);
+    animation: pulseGlow 3s infinite alternate;
+}
+
+.logo-text h2 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 0.5px;
+}
+
+.logo-text span {
+    font-size: 0.75rem;
+    color: var(--primary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.close-sidebar-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Sidebar Section Block */
+.sidebar-section {
+    background-color: var(--bg-surface-glass);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    padding: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.sidebar-section h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-primary);
+}
+
+.sidebar-section h3 i {
+    color: var(--primary);
+}
+
+/* Info card description */
+.info-card p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* Offered courses block */
+.section-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.section-header-flex h3 {
+    margin-bottom: 0;
+}
+
+.course-count {
+    font-size: 0.75rem;
+    background-color: var(--primary-light);
+    color: var(--primary);
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.search-box {
+    position: relative;
+    margin-bottom: 12px;
+}
+
+.search-box i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 10px 12px 10px 34px;
+    background-color: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    outline: none;
+    transition: all var(--transition-fast);
+}
+
+.search-box input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+.course-list {
+    list-style: none;
+    max-height: 240px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.course-list li {
+    padding: 8px 12px;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.course-list li::before {
+    content: "•";
+    color: var(--secondary);
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.course-list li:hover {
+    background-color: var(--primary-light);
+    color: var(--primary);
+    padding-left: 16px;
+}
+
+/* Contact Links Card */
+.contact-links {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.contact-links li {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.contact-links li i {
+    color: var(--primary);
+    font-size: 1.05rem;
+    margin-top: 3px;
+    background-color: var(--primary-light);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.contact-links li div strong {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.contact-links li div span, 
+.contact-links li div a {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+    word-break: break-all;
+    line-height: 1.4;
+}
+
+.contact-links li div a:hover {
+    color: var(--primary);
+}
+
+/* ==========================================================================
+   Chatbox Interface Styles
+   ========================================================================== */
+.chat-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: transparent;
+    position: relative;
+}
+
+/* Chat Header */
+.chat-header {
+    height: var(--header-height);
+    background-color: rgba(19, 27, 46, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 10;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.mobile-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.bot-avatar {
+    position: relative;
+    width: 46px;
+    height: 46px;
+    background: var(--gradient-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.3rem;
+    box-shadow: var(--gradient-glow);
+}
+
+.status-indicator {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-secondary);
+}
+
+.status-indicator.online {
+    background-color: var(--success);
+    box-shadow: 0 0 8px var(--success);
+}
+
+.bot-details h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.bot-details p {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.header-action-btn {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 8px 16px;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    transition: all var(--transition-fast);
+}
+
+.header-action-btn:hover {
+    background-color: var(--primary-light);
+    border-color: var(--primary);
+    transform: translateY(-1px);
+}
+
+.header-action-btn:active {
+    transform: translateY(0);
+}
+
+/* Chat Messages Area */
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Message Wrapper */
+.message-wrapper {
+    display: flex;
+    width: 100%;
+    animation: messageReveal 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.message-wrapper.bot {
+    justify-content: flex-start;
+}
+
+.message-wrapper.user {
+    justify-content: flex-end;
+}
+
+/* Message Content Bubble */
+.message-bubble {
+    max-width: 75%;
+    padding: 14px 18px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    position: relative;
+}
+
+.message-wrapper.bot .message-bubble {
+    background-color: var(--bg-surface-glass);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: var(--border-radius-lg) var(--border-radius-lg) var(--border-radius-lg) 4px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.message-wrapper.user .message-bubble {
+    background: var(--gradient-primary);
+    color: white;
+    border-radius: var(--border-radius-lg) var(--border-radius-lg) 4px var(--border-radius-lg);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.15);
+}
+
+/* Structured layouts in bot messages (list, info segments) */
+.message-bubble ul, .message-bubble ol {
+    margin-top: 8px;
+    padding-left: 20px;
+}
+
+.message-bubble li {
+    margin-bottom: 6px;
+}
+
+.message-bubble li:last-child {
+    margin-bottom: 0;
+}
+
+.message-bubble strong {
+    color: white;
+}
+
+.message-bubble a {
+    color: #93c5fd;
+    text-decoration: underline;
+    transition: color var(--transition-fast);
+}
+
+.message-bubble a:hover {
+    color: white;
+}
+
+.timestamp {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+    text-align: right;
+}
+
+.message-wrapper.user .timestamp {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* ==========================================================================
+   Advanced Chat UI Components
+   ========================================================================== */
+
+/* 1. Multiple-Choice Quiz Layout */
+.mcq-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+    width: 100%;
+}
+
+.mcq-option {
+    background-color: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 12px 16px;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    text-align: left;
+    font-size: 0.88rem;
+    line-height: 1.4;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.mcq-option:hover {
+    background-color: var(--primary-light);
+    border-color: var(--primary);
+    transform: translateX(4px);
+}
+
+.mcq-option span.option-letter {
+    background: var(--gradient-primary);
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
+}
+
+/* 2. Progress Match Bars (Scoring recommendations) */
+.match-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.match-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.match-label-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.match-label {
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.match-percent {
+    color: var(--secondary);
+    font-weight: 700;
+}
+
+.match-bar-bg {
+    background-color: rgba(15, 23, 42, 0.8);
+    height: 8px;
+    border-radius: 4px;
+    width: 100%;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.match-bar-fill {
+    background: var(--gradient-primary);
+    height: 100%;
+    border-radius: 4px;
+    width: 0%; /* Animate on mount */
+    transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 3. Interactive Roadmap Timeline */
+.roadmap-timeline {
+    position: relative;
+    margin-top: 16px;
+    padding-left: 12px;
+}
+
+.roadmap-timeline::before {
+    content: "";
+    position: absolute;
+    left: 20px;
+    top: 10px;
+    bottom: 20px;
+    width: 2px;
+    background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
+    opacity: 0.3;
+}
+
+.roadmap-step {
+    position: relative;
+    padding-left: 36px;
+    margin-bottom: 16px;
+}
+
+.roadmap-step:last-child {
+    margin-bottom: 0;
+}
+
+.roadmap-step-icon {
+    position: absolute;
+    left: 9px;
+    top: 2px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: var(--bg-surface);
+    border: 2px solid var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    z-index: 2;
+    transition: all var(--transition-fast);
+}
+
+.roadmap-step.active .roadmap-step-icon {
+    background: var(--gradient-primary);
+    border-color: transparent;
+    color: white;
+    box-shadow: var(--gradient-glow);
+}
+
+.roadmap-step-header {
+    background-color: rgba(15, 23, 42, 0.4);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: 10px 14px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all var(--transition-fast);
+}
+
+.roadmap-step-header:hover {
+    background-color: rgba(15, 23, 42, 0.8);
+    border-color: var(--primary-light);
+}
+
+.roadmap-step-header h4 {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.roadmap-step-header i.toggle-arrow {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    transition: transform var(--transition-normal);
+}
+
+.roadmap-step.active i.toggle-arrow {
+    transform: rotate(180deg);
+    color: var(--primary);
+}
+
+.roadmap-step-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--transition-normal) ease-out, padding var(--transition-normal);
+    padding: 0 14px;
+}
+
+.roadmap-step.active .roadmap-step-content {
+    max-height: 500px; /* high limit to fit content */
+    padding: 12px 14px;
+    background-color: rgba(15, 23, 42, 0.2);
+    border-left: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+}
+
+.roadmap-step-content p {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.roadmap-tool-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.roadmap-tool-badge {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* ==========================================================================
+   Quick Action Chips Options Container
+   ========================================================================== */
+.quick-options-container {
+    padding: 0 24px 12px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    background-color: transparent;
+    z-index: 5;
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+.option-chip {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    animation: chipEntrance 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.option-chip:hover {
+    background: var(--gradient-primary);
+    border-color: transparent;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: var(--gradient-glow);
+}
+
+.option-chip:active {
+    transform: translateY(0);
+}
+
+.option-chip i {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+/* Chat Footer Input Area */
+.chat-footer {
+    height: var(--footer-height);
+    background-color: rgba(19, 27, 46, 0.8);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--border-color);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    z-index: 10;
+}
+
+.chat-input-form {
+    display: flex;
+    width: 100%;
+    background-color: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    padding: 6px 6px 6px 18px;
+    align-items: center;
+    gap: 12px;
+    transition: all var(--transition-fast);
+}
+
+.chat-input-form:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary-light);
+    background-color: rgba(15, 23, 42, 0.8);
+}
+
+.chat-input-form input {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    outline: none;
+    font-size: 0.95rem;
+    height: 38px;
+}
+
+.chat-input-form input::placeholder {
+    color: var(--text-muted);
+}
+
+.send-btn {
+    width: 38px;
+    height: 38px;
+    background: var(--gradient-primary);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.send-btn:hover {
+    transform: scale(1.05);
+    box-shadow: var(--gradient-glow);
+}
+
+.send-btn:active {
+    transform: scale(0.95);
+}
+
+/* ==========================================================================
+   Typing Indicator & Custom UI Elements
+   ========================================================================== */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 6px;
+}
+
+.typing-dot {
+    width: 7px;
+    height: 7px;
+    background-color: var(--text-secondary);
+    border-radius: 50%;
+    animation: typingBounce 1.4s infinite ease-in-out both;
+}
+
+.typing-dot:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.typing-dot:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+/* Embedded Recommendation Cards (Rich UI result in bot bubble) */
+.result-card {
+    background-color: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius-md);
+    padding: 14px;
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.result-card-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--secondary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.result-card-courses h4 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.course-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.course-tag {
+    background-color: var(--primary-light);
+    color: var(--primary);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+/* Exit/Inactive View Cover Overlay */
+.chat-messages.inactive {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/* Mobile Sidebar Backdrop Overlay */
+.sidebar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 95;
+    display: none;
+}
+
+/* ==========================================================================
+   Animations Keyframes
+   ========================================================================== */
+@keyframes messageReveal {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes chipEntrance {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes typingBounce {
+    0%, 80%, 100% {
+        transform: scale(0);
+    }
+    40% {
+        transform: scale(1.0);
+    }
+}
+
+@keyframes pulseGlow {
+    from {
+        box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+    }
+    to {
+        box-shadow: 0 0 25px rgba(99, 102, 241, 0.5);
+    }
+}
+
+/* ==========================================================================
+   Responsive Media Queries
+   ========================================================================== */
+@media (max-width: 900px) {
+    .sidebar {
+        position: absolute;
+        left: 0;
+        top: 0;
+        transform: translateX(-100%);
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+    }
+    
+    .sidebar.open {
+        transform: translateX(0);
+    }
+    
+    .sidebar.open + .sidebar-overlay {
+        display: block;
+    }
+    
+    .close-sidebar-btn {
+        display: block;
+    }
+    
+    .mobile-toggle {
+        display: block;
+    }
+}
+
+@media (max-width: 600px) {
+    .chat-header {
+        padding: 0 16px;
+    }
+    
+    .chat-messages {
+        padding: 16px;
+        gap: 16px;
+    }
+    
+    .message-bubble {
+        max-width: 85%;
+        padding: 12px 14px;
+        font-size: 0.9rem;
+    }
+    
+    .chat-footer {
+        padding: 0 16px;
+        height: 75px;
+    }
+    
+    .quick-options-container {
+        padding: 0 16px 8px 16px;
+    }
+    
+    .bot-details h1 {
+        font-size: 1rem;
+    }
+    
+    .bot-avatar {
+        width: 38px;
+        height: 38px;
+        font-size: 1.1rem;
+    }
+    
+    .header-action-btn span {
+        display: none;
+    }
+    
+    .header-action-btn {
+        padding: 8px 10px;
+    }
+}

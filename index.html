@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>21st Academy - Career Guidance Chatbot</title>
+    <!-- Modern Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Panel for Academy Information and Course Catalog -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-area">
+                    <div class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                    <div class="logo-text">
+                        <h2>21st Academy</h2>
+                        <span>Future Ready Training</span>
+                    </div>
+                </div>
+                <button class="close-sidebar-btn" id="closeSidebar" aria-label="Close Sidebar">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="sidebar-content">
+                <!-- Info Segment -->
+                <div class="sidebar-section info-card">
+                    <h3><i class="fa-solid fa-circle-info"></i> About Us</h3>
+                    <p>21st Academy provides industry-focused IT and business training to accelerate your career growth with practical experience.</p>
+                </div>
+
+                <!-- Course Directory with Filter -->
+                <div class="sidebar-section courses-section">
+                    <div class="section-header-flex">
+                        <h3><i class="fa-solid fa-book-open"></i> Offered Courses</h3>
+                        <span class="course-count" id="courseCount">14 Courses</span>
+                    </div>
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="courseSearch" placeholder="Search courses...">
+                    </div>
+                    <ul class="course-list" id="courseList">
+                        <!-- Populated by JS -->
+                    </ul>
+                </div>
+
+                <!-- Contact details -->
+                <div class="sidebar-section contact-card">
+                    <h3><i class="fa-solid fa-address-book"></i> Get In Touch</h3>
+                    <ul class="contact-links">
+                        <li>
+                            <i class="fa-solid fa-location-dot"></i>
+                            <div>
+                                <strong>Address</strong>
+                                <span>Hayath Plaza, Nambi Street, Poonamallee, Chennai 600056</span>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-phone"></i>
+                            <div>
+                                <strong>Phone</strong>
+                                <a href="tel:+919944747090">+91 9944747090</a>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-envelope"></i>
+                            <div>
+                                <strong>Email</strong>
+                                <a href="mailto:admin@21stacademy.in">admin@21stacademy.in</a>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-globe"></i>
+                            <div>
+                                <strong>Website</strong>
+                                <a href="https://www.21stacademy.in" target="_blank" rel="noopener">www.21stacademy.in</a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Chatbot Container -->
+        <main class="chat-container">
+            <!-- Chat Header -->
+            <header class="chat-header">
+                <div class="header-left">
+                    <button class="mobile-toggle" id="mobileToggle" aria-label="Open Menu">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div class="bot-avatar">
+                        <i class="fa-solid fa-robot"></i>
+                        <span class="status-indicator online"></span>
+                    </div>
+                    <div class="bot-details">
+                        <h1>Career Guidance Assistant</h1>
+                        <p>Active • Rules-based Engine</p>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button class="header-action-btn" id="restartBtn" title="Restart Chat">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>Restart</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Chat Messages Window -->
+            <div class="chat-messages" id="chatMessages">
+                <!-- Messages will be injected by script.js -->
+            </div>
+
+            <!-- Quick Action Area (For buttons / option chips) -->
+            <div class="quick-options-container" id="quickOptionsContainer">
+                <!-- Option chips injected here dynamically -->
+            </div>
+
+            <!-- Chat Footer Input -->
+            <footer class="chat-footer">
+                <form class="chat-input-form" id="chatInputForm">
+                    <input type="text" id="chatInput" placeholder="Type a message or click an option..." autocomplete="off">
+                    <button type="submit" class="send-btn" id="sendBtn" aria-label="Send Message">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Custom Script -->
+    <script src="script.js"></script>
+</body>
+</html>
