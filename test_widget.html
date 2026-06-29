@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Corporate Portal - Widget Test Page</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body class="text-slate-100 p-8 flex flex-col items-center justify-center">
+
+    <div class="max-w-2xl w-full bg-slate-900/60 backdrop-blur-md border border-slate-800 p-8 rounded-2xl shadow-2xl space-y-6">
+        <!-- Badge -->
+        <span class="px-3 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold rounded-full uppercase tracking-wider">
+            Integration Testing
+        </span>
+
+        <!-- Description -->
+        <div class="space-y-2">
+            <h1 class="text-3xl font-extrabold text-white tracking-tight">Chatbot Widget Sandbox</h1>
+            <p class="text-slate-400 text-sm leading-relaxed">
+                This is a mock company webpage demonstrating the plug-and-play chatbot widget. You can see the floating blue bubble in the bottom-right corner of the page.
+            </p>
+        </div>
+
+        <!-- How it works -->
+        <div class="border-t border-slate-800 pt-6 space-y-4">
+            <h2 class="text-lg font-bold text-white">How to embed this widget:</h2>
+            <p class="text-slate-400 text-xs leading-relaxed">
+                To embed this private, RAG-enabled chatbot into any existing company webpage, simply paste the following script tag right before the closing <code>&lt;/body&gt;</code> tag:
+            </p>
+            <pre class="bg-slate-950 border border-slate-800 p-4 rounded-xl font-mono text-xs text-blue-400 overflow-x-auto whitespace-pre"><code>&lt;script src="http://localhost:8000/static/widget.js"&gt;&lt;/script&gt;</code></pre>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="border-t border-slate-800 pt-6 text-xs text-slate-500 flex items-center justify-between">
+            <span>Server status: <strong class="text-emerald-400">Online</strong></span>
+            <span>Platform: <strong class="text-slate-400">On-Premises</strong></span>
+        </div>
+    </div>
+
+    <!-- ── EMBED THE CHAT WIDGET ── -->
+    <!-- Pointing directly to our FastAPI static asset mount -->
+    <script src="http://localhost:8000/static/widget.js"></script>
+
+</body>
+</html>

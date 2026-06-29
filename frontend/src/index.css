@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-surface-900 text-gray-100 font-sans antialiased;
+    min-height: 100vh;
+    background: radial-gradient(ellipse at top left, rgba(43, 90, 255, 0.08) 0%, #0a0b0f 50%);
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { @apply bg-surface-800; }
+  ::-webkit-scrollbar-thumb { @apply bg-surface-500 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-brand-600; }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-surface-800 border border-white/[0.06] rounded-2xl backdrop-blur-sm;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  .glass-button {
+    @apply bg-white/[0.06] hover:bg-white/[0.10] border border-white/[0.08] 
+           text-gray-200 rounded-xl px-4 py-2 transition-all duration-200
+           hover:border-white/[0.15] active:scale-95;
+  }
+
+  .brand-button {
+    @apply bg-brand-500 hover:bg-brand-600 text-white font-semibold rounded-xl
+           px-5 py-2.5 transition-all duration-200 shadow-glow hover:shadow-glow-lg
+           active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .input-field {
+    @apply w-full bg-surface-700 border border-white/[0.08] rounded-xl px-4 py-3
+           text-gray-100 placeholder-gray-500 outline-none transition-all duration-200
+           focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/20;
+  }
+
+  .sidebar-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400
+           hover:bg-white/[0.05] hover:text-gray-100 transition-all duration-200 cursor-pointer;
+  }
+
+  .sidebar-item.active {
+    @apply bg-brand-500/15 text-brand-400 border border-brand-500/20;
+  }
+
+  .badge {
+    @apply text-xs font-semibold px-2 py-0.5 rounded-full;
+  }
+
+  .typing-dot {
+    @apply w-2 h-2 bg-brand-400 rounded-full animate-bounce-dot;
+  }
+
+  .code-block {
+    @apply bg-surface-900 rounded-xl border border-white/[0.06] p-4 
+           font-mono text-sm text-green-300 overflow-x-auto;
+  }
+}

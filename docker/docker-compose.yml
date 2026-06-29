@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  db:
+    image: ankane/pgvector:v0.5.1
+    container_name: private_ai_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: private_ai
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d private_ai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/backend.Dockerfile
+    container_name: private_ai_backend
+    restart: always
+    environment:
+      - POSTGRES_SERVER=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=private_ai
+      - DEFAULT_LLM_PROVIDER=ollama
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - DEFAULT_LLM_MODEL=llama3
+      - OLLAMA_EMBEDDING_MODEL=nomic-embed-text
+      - USE_LOCAL_EMBEDDINGS=False
+      - SECRET_KEY=supersecretkeychangeinproduction1234567890!@#$$%
+    volumes:
+      - backend_uploads:/app/uploads
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/frontend.Dockerfile
+    container_name: private_ai_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: private_ai_ollama
+    restart: always
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    # ── GPU ACCELERATION CONFIGURATION ───────────────────────────────────────
+    # If the deployment host has an NVIDIA GPU and nvidia-container-toolkit is
+    # installed, uncomment the lines below to enable hardware-accelerated local inference.
+    # If left commented, Ollama runs in CPU-only fallback mode out-of-the-box.
+    #
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+volumes:
+  postgres_data:
+  backend_uploads:
+  ollama_data:

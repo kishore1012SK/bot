@@ -1,1137 +1,1046 @@
-/**
- * ==========================================================================
- * 21st Academy Career Guidance Chatbot JS
- * Traditional Rule-Based & Expert Scoring Assessment Engine
- * ==========================================================================
- */
+// Enterprise AI Assistant Platform - Frontend Simulation Controller
 
-// --- Constants & Database Mock ---
-const ACADEMY_COURSES = [
-    "Power BI",
-    "Networking CCNA",
-    "Mobile App Development",
-    "HR Analytics",
-    "Generative AI",
-    "Full Stack Development",
-    "Digital Marketing",
-    "DevOps",
-    "Data Science",
-    "Data Engineering",
-    "Cyber Security",
-    "Cloud Computing AWS",
-    "Business Data Analytics",
-    "Automation Testing"
-];
+// ── GLOBAL STATE ──
+let activeTab = 'chat';
+let activeAdminTab = 'overview';
+let isSidebarCollapsed = false;
+let ragEnabled = true;
 
-const CONTACT_INFO = {
-    address: "Hayath Plaza, Nambi Street, Poonamallee, Chennai 600056",
-    phone: "+91 9944747090",
-    email: "admin@21stacademy.in",
-    website: "https://www.21stacademy.in"
+// Mock database store
+const STATE = {
+    conversations: [
+        { id: 1, title: "Company Travel Policies" },
+        { id: 2, title: "Systems Scaling Issues" },
+        { id: 3, title: "Q3 Project Planning" }
+    ],
+    activeChatId: 1,
+    chats: {
+        1: [
+            { role: 'assistant', content: "Welcome back! I am currently reading from your corporate knowledge base index. How can I help you find information inside our travel documents?" }
+        ],
+        2: [
+            { role: 'user', content: "Our database is getting connection pool timeout issues under heavy load." },
+            { role: 'assistant', content: "Under heavy load, connection timeouts in PostgreSQL typically point to either:\n1. Leak of connections in the application layer.\n2. Insufficient max_connections values in pg_hba.conf.\n3. Slow transactions blocking connection yields.\n\n### Suggestions to fix:\n```python\n# Configure SQLAlchemy pool sizing\nengine = create_async_engine(\n    DATABASE_URL,\n    pool_size=20,\n    max_overflow=10,\n    pool_timeout=30\n)\n```" }
+        ],
+        3: [
+            { role: 'assistant', content: "Hi Admin! Let's draft our milestone plans for the next features." }
+        ]
+    },
+    documents: [
+        { id: 1, name: "HR_Leave_Policy_2026.pdf", category: "HR Policies", version: 2, tags: ["leave", "hr"], date: "2026-06-15" },
+        { id: 2, name: "Database_Scaling_Guide.md", category: "Engineering", version: 1, tags: ["postgres", "scaling"], date: "2026-06-20" },
+        { id: 3, name: "Office_Travel_Guidelines.docx", category: "Travel", version: 1, tags: ["travel", "billing"], date: "2026-06-25" }
+    ],
+    interviewSession: {
+        active: false,
+        type: 'Technical',
+        turn: 0,
+        chatHistory: [],
+        typeQuestions: {
+            Technical: [
+                "Welcome to the Technical Interview. Let's start with system design: How would you design a rate limiter for a high-traffic API?",
+                "Interesting approach. How would you handle state synchronization if the rate limiter is deployed across a distributed cluster?",
+                "That works. Let's switch to data structures. Explain the trade-offs of using a hash map vs a binary search tree in database indexing.",
+                "Good. Now, explain how you would detect memory leaks in a Python FastAPI application under load.",
+                "Final question: How do you handle database migration scripts safely on a live production table with millions of rows?"
+            ],
+            HR: [
+                "Welcome. Please tell me about a time you had a major technical disagreement with a team lead. How was it resolved?",
+                "How do you handle prioritization when you are tasked with three urgent deadlines at the same time?",
+                "Describe a situation where a project you owned failed or was delayed. What did you learn?",
+                "How do you stay up-to-date with emerging tools, and how do you introduce them to your team?",
+                "Why do you want to join our enterprise AI engineering squad specifically?"
+            ],
+            Coding: [
+                "Let's look at code logic. Write a function in Python that returns the longest palindromic substring in a given string.",
+                "Excellent. What is the time and space complexity of your solution, and how can we optimize it?",
+                "Now, implement a thread-safe Singleton pattern in your language of choice.",
+                "How would you optimize a nested SQL query that takes several seconds to return results?",
+                "Lastly, explain how you would resolve a deadlock scenario detected in database lock logs."
+            ]
+        }
+    },
+    careerSkills: ["Python", "SQL", "Docker", "JavaScript", "React"],
+    projectSkills: ["Python", "SQL", "Docker"]
 };
 
-// Career Details & Visual Roadmaps
-const CAREERS = {
-    AI_ENGINEER: {
-        title: "AI Engineer",
-        courses: ["Data Science", "Generative AI"],
-        desc: "Develop machine learning models, neural networks, and generative AI systems to solve complex analytical problems.",
-        roadmap: [
-            {
-                phase: "Phase 1: Foundations",
-                desc: "Learn programming basics, statistics, and algebraic concepts required for analytical models.",
-                tools: ["Python Basics", "Linear Algebra", "Probability & Statistics", "SQL"]
-            },
-            {
-                phase: "Phase 2: Machine Learning",
-                desc: "Build classical machine learning models for forecasting, classification, and grouping data.",
-                tools: ["Pandas", "NumPy", "Scikit-Learn", "Regression", "Decision Trees"]
-            },
-            {
-                phase: "Phase 3: Deep Learning & NLP",
-                desc: "Work with neural network layers, computer vision concepts, and text processing models.",
-                tools: ["TensorFlow", "PyTorch", "ANN", "CNN", "Natural Language Processing"]
-            },
-            {
-                phase: "Phase 4: Generative AI",
-                desc: "Train or fine-tune models, create conversational apps, and use APIs to build AI products.",
-                tools: ["Prompt Engineering", "Large Language Models (LLMs)", "LangChain", "Vector Databases"]
-            }
-        ]
-    },
-    FULL_STACK_DEVELOPER: {
-        title: "Full Stack Developer",
-        courses: ["Full Stack Development"],
-        desc: "Build responsive user interfaces and backend database engines that fuel web and mobile applications.",
-        roadmap: [
-            {
-                phase: "Phase 1: Frontend Basics",
-                desc: "Master the building blocks of the web and style web pages for responsive, interactive user experiences.",
-                tools: ["HTML5", "CSS3", "JavaScript ES6", "Flexbox & Grid", "DOM Manipulation"]
-            },
-            {
-                phase: "Phase 2: Advanced Frontend UI",
-                desc: "Create dynamic single-page web applications using powerful frontend frameworks and modular UI structures.",
-                tools: ["React.js", "Tailwind CSS", "State Management", "Routing", "APIs Fetching"]
-            },
-            {
-                phase: "Phase 3: Backend & Database",
-                desc: "Develop server-side logic, create RESTful web APIs, and model relational or document-based database storages.",
-                tools: ["Node.js", "Express.js", "MongoDB", "SQL / PostgreSQL", "User Authentication"]
-            },
-            {
-                phase: "Phase 4: Architecture & Deploy",
-                desc: "Learn version control systems, prepare cloud build runs, and deploy software services globally.",
-                tools: ["Git & GitHub", "Docker", "REST API Design", "AWS Deployment", "CI/CD pipelines"]
-            }
-        ]
-    },
-    CYBER_SECURITY_ENGINEER: {
-        title: "Cyber Security Engineer",
-        courses: ["Cyber Security", "Networking CCNA"],
-        desc: "Secure infrastructure pipelines, perform vulnerability checks, and protect databases from external network intrusions.",
-        roadmap: [
-            {
-                phase: "Phase 1: Networks & Systems",
-                desc: "Understand operating systems (Linux, Windows Server) and TCP/IP routing layouts to comprehend how data flows.",
-                tools: ["Linux Command Line", "TCP/IP Protocol Suite", "DNS & DHCP", "Wireshark Packet Analysis"]
-            },
-            {
-                phase: "Phase 2: Security & Audits",
-                desc: "Learn secure authentication guidelines, configure firewalls, and study common encryption types.",
-                tools: ["Cryptography Basics", "Firewall Configuration", "Access Control Lists (ACLs)", "IDS/IPS Systems"]
-            },
-            {
-                phase: "Phase 3: Penetration Testing",
-                desc: "Perform ethical hacking procedures in a test sandbox environment to find vulnerabilities in software.",
-                tools: ["Kali Linux", "Nmap Port Scan", "Metasploit Framework", "OWASP Top 10 Web Exploit"]
-            },
-            {
-                phase: "Phase 4: Operations & Defense",
-                desc: "Monitor event trackers to defend systems, report incidents, and implement threat prevention strategies.",
-                tools: ["SIEM Log Analysis", "Incident Response Protocols", "Security Auditing & Compliance"]
-            }
-        ]
-    },
-    CLOUD_ENGINEER: {
-        title: "Cloud Engineer",
-        courses: ["Cloud Computing AWS", "DevOps"],
-        desc: "Design scalable cloud infrastructure layouts, automate software deployment processes, and monitor online server runtimes.",
-        roadmap: [
-            {
-                phase: "Phase 1: Admin & Linux Shells",
-                desc: "Master system command administration and networking topologies which serve as the base of cloud instances.",
-                tools: ["Linux Shell Scripting", "SSH Access", "VPC Networking", "IAM Credentials"]
-            },
-            {
-                phase: "Phase 2: AWS Services Setup",
-                desc: "Deploy core cloud hosting products, scale instances automatically, and link databases to servers.",
-                tools: ["AWS EC2 Host", "AWS S3 Storage", "Auto-Scaling Groups", "RDS Database Cloud"]
-            },
-            {
-                phase: "Phase 3: DevOps Automation",
-                desc: "Adopt Infrastructure-as-Code to create environments through code, and configure containerized applications.",
-                tools: ["Terraform Scripts", "Docker Containers", "Ansible Configuration", "Git Flow"]
-            },
-            {
-                phase: "Phase 4: Orchestration & CI/CD",
-                desc: "Scale microservices across clusters and automate building, testing, and deployment pipelines.",
-                tools: ["Kubernetes (EKS)", "Jenkins / GitHub Actions", "CloudWatch Monitoring", "Load Balancing"]
-            }
-        ]
-    },
-    BUSINESS_ANALYST: {
-        title: "Business Analyst",
-        courses: ["Business Data Analytics", "Power BI", "HR Analytics"],
-        desc: "Bridge operational metrics with system solutions, analyze processes, and translate numerical data into visual business charts.",
-        roadmap: [
-            {
-                phase: "Phase 1: Analytical Foundations",
-                desc: "Build reports, track data using formulas, and create clean dashboard calculations.",
-                tools: ["Advanced MS Excel", "Data Cleaning", "Pivot Tables & Charts", "Statistical Summaries"]
-            },
-            {
-                phase: "Phase 2: SQL Data Querying",
-                desc: "Write query statements to search, filter, join, and extract key metrics from relational business databases.",
-                tools: ["SQL Queries", "Relational Database joins", "Data Aggregation", "Subqueries"]
-            },
-            {
-                phase: "Phase 3: Visual Dashboards",
-                desc: "Transform database reports into interactive, real-time dashboards for executives to monitor KPIs.",
-                tools: ["Power BI", "DAX Formulas", "Data Modeling", "Tableau Charts"]
-            },
-            {
-                phase: "Phase 4: Strategy & Forecasting",
-                desc: "Create data-driven business models, present roadmap projects, and predict market sales trends.",
-                tools: ["Business Metrics KPIs", "Time Series Forecast", "Agile Product Management", "Presentations"]
-            }
-        ]
-    },
-    DIGITAL_MARKETING_SPECIALIST: {
-        title: "Digital Marketing Specialist",
-        courses: ["Digital Marketing"],
-        desc: "Grow online brands, optimize search visibility, run advertisement campaigns, and configure growth marketing funnels.",
-        roadmap: [
-            {
-                phase: "Phase 1: Marketing & Funnels",
-                desc: "Learn consumer psychology, study customer personas, and structure high-converting marketing funnels.",
-                tools: ["Content Strategy", "Copywriting Basics", "Lead Generation Funnels", "Brand Positioning"]
-            },
-            {
-                phase: "Phase 2: Search Optimization (SEO)",
-                desc: "Improve website search rankings, analyze search keywords, and resolve page indexing structures.",
-                tools: ["Google Search Console", "Keyword Analysis", "On-Page SEO", "Technical SEO Audits"]
-            },
-            {
-                phase: "Phase 3: Paid Ads Management",
-                desc: "Configure target audiences, outline budget bids, and launch paid advertising campaigns.",
-                tools: ["Meta Ads Manager", "Google Ads Network", "A/B Test Ad copy", "Cost per Acquisition (CPA)"]
-            },
-            {
-                phase: "Phase 4: Analytics & CRO",
-                desc: "Track user clicks, measure traffic ROI metrics, and optimize websites to maximize sales.",
-                tools: ["Google Analytics 4 (GA4)", "Conversion Rate Optimization", "Email Marketing Flow", "Tag Manager"]
-            }
-        ]
-    }
-};
-
-// --- Chatbot States ---
-const STATES = {
-    MAIN_MENU: "MAIN_MENU",
-    CAREER_ASSESSMENT: "CAREER_ASSESSMENT",
-    COURSE_RECOMMENDATION: "COURSE_RECOMMENDATION",
-    EXITED: "EXITED"
-};
-
-// --- Stateful Variables ---
-let currentState = STATES.MAIN_MENU;
-let currentQuestionIndex = 0;
-
-// Interactive Quiz Accumulator Variables
-let userScores = {
-    coding: 0,
-    mathData: 0,
-    creativity: 0,
-    communication: 0,
-    security: 0,
-    cloud: 0
-};
-
-// 10 Weighted Multiple-Choice Questions
-const ASSESSMENT_QUESTIONS = [
-    {
-        question: "Which of these tasks sounds most exciting to you?",
-        options: [
-            { letter: "A", text: "Building beautiful, interactive user interfaces and websites.", weights: { coding: 2, creativity: 3 } },
-            { letter: "B", text: "Teaching a computer to find patterns in data or predict trends.", weights: { coding: 1, mathData: 3 } },
-            { letter: "C", text: "Setting up secure systems and tracking down network security gaps.", weights: { security: 3 } },
-            { letter: "D", text: "Configuring online servers and automating software pipelines.", weights: { cloud: 3 } },
-            { letter: "E", text: "Leading team presentations and analyzing marketing metrics.", weights: { communication: 3 } }
-        ]
-    },
-    {
-        question: "How do you feel about mathematics, numbers, and statistics?",
-        options: [
-            { letter: "A", text: "I love them! I enjoy solving logical formulas and analyzing data models.", weights: { mathData: 3 } },
-            { letter: "B", text: "They are fine; I can write logical code to handle mathematical issues.", weights: { coding: 2, mathData: 1 } },
-            { letter: "C", text: "I prefer working on visual styling, graphic designs, or marketing plans.", weights: { creativity: 2, communication: 1 } },
-            { letter: "D", text: "I prefer configuring infrastructure, network devices, and security rules.", weights: { security: 2, cloud: 2 } }
-        ]
-    },
-    {
-        question: "When faced with a problem, what is your first instinct?",
-        options: [
-            { letter: "A", text: "Write script code to automate the solution process.", weights: { coding: 3 } },
-            { letter: "B", text: "Sketch visual layouts, mockups, or draw design components.", weights: { creativity: 3 } },
-            { letter: "C", text: "Investigate log entries to identify network loops or threats.", weights: { security: 3 } },
-            { letter: "D", text: "Spin up a hosting server and build virtual routers.", weights: { cloud: 3 } },
-            { letter: "E", text: "Discuss with team members and coordinate a business strategy.", weights: { communication: 3 } }
-        ]
-    },
-    {
-        question: "How do you like working with spreadsheets, databases, and charts?",
-        options: [
-            { letter: "A", text: "I love database queries and finding insights inside records.", weights: { mathData: 3 } },
-            { letter: "B", text: "I prefer writing code to render database records on page layouts.", weights: { coding: 2, creativity: 1 } },
-            { letter: "C", text: "I like networking layouts and cloud storage configurations.", weights: { security: 2, cloud: 2 } },
-            { letter: "D", text: "I like making brand projections and sales funnels.", weights: { communication: 3 } }
-        ]
-    },
-    {
-        question: "What is your comfort level with public speaking or client pitching?",
-        options: [
-            { letter: "A", text: "Very comfortable, I enjoy sales, storytelling, and marketing.", weights: { communication: 3 } },
-            { letter: "B", text: "Comfortable coordinating within small technical agile teams.", weights: { communication: 1 } },
-            { letter: "C", text: "I prefer coding or setting up servers in a focused workspace.", weights: { coding: 2, security: 1, cloud: 1 } },
-            { letter: "D", text: "I prefer writing technical documentation or analytical data sheets.", weights: { mathData: 2 } }
-        ]
-    },
-    {
-        question: "Which technology topic captures your curiosity the most?",
-        options: [
-            { letter: "A", text: "AI neural networks, large language models (LLMs), or big data.", weights: { mathData: 3, coding: 1 } },
-            { letter: "B", text: "Polished web applications, frontend widgets, or interactive UI.", weights: { creativity: 3, coding: 2 } },
-            { letter: "C", text: "Ethical hacking, firewall setups, and scanning network logs.", weights: { security: 3 } },
-            { letter: "D", text: "VPC routing, AWS computing instances, and Docker containers.", weights: { cloud: 3 } },
-            { letter: "E", text: "Social media marketing campaigns, SEO rules, and online branding.", weights: { communication: 3 } }
-        ]
-    },
-    {
-        question: "What project challenge sounds most satisfying to build?",
-        options: [
-            { letter: "A", text: "Designing a high-converting website layout and logo.", weights: { creativity: 3 } },
-            { letter: "B", text: "Writing a script in Python to gather metrics from web APIs.", weights: { coding: 3, mathData: 1 } },
-            { letter: "C", text: "Auditing a website setup to block potential hacker injection attacks.", weights: { security: 3 } },
-            { letter: "D", text: "Deploying a website to the cloud to make it globally scale.", weights: { cloud: 3 } },
-            { letter: "E", text: "Formulating a business growth pitch deck and campaign map.", weights: { communication: 3 } }
-        ]
-    },
-    {
-        question: "How do you feel about writing raw program code?",
-        options: [
-            { letter: "A", text: "I love writing code! I want programming to be my primary daily task.", weights: { coding: 4 } },
-            { letter: "B", text: "I like writing code, but also want to work with servers or networks.", weights: { coding: 2, cloud: 2, security: 2 } },
-            { letter: "C", text: "I prefer low-code analytics dashboards (Power BI) and data cleaning.", weights: { mathData: 3 } },
-            { letter: "D", text: "I prefer to avoid coding and focus on advertising, writing, or sales.", weights: { communication: 3 } }
-        ]
-    },
-    {
-        question: "How do you handle detail-oriented tasks?",
-        options: [
-            { letter: "A", text: "I notice minor items: single code syntax typos or port anomalies bug me.", weights: { coding: 2, security: 3 } },
-            { letter: "B", text: "I focus on the big-picture visual flow and customer layouts.", weights: { creativity: 3 } },
-            { letter: "C", text: "I check that server structures and cloud configs are orderly.", weights: { cloud: 3 } },
-            { letter: "D", text: "I think about human dynamics, user behavior, and market results.", weights: { communication: 3 } }
-        ]
-    },
-    {
-        question: "What is your primary career goal in the IT domain?",
-        options: [
-            { letter: "A", text: "Build automated, data-driven AI systems.", weights: { mathData: 3, coding: 2 } },
-            { letter: "B", text: "Deliver complete web products, coding both front and back ends.", weights: { coding: 3, creativity: 2 } },
-            { letter: "C", text: "Provide penetration testing and security audits.", weights: { security: 3 } },
-            { letter: "D", text: "Oversee virtual systems and scale cloud platforms.", weights: { cloud: 3 } },
-            { letter: "E", text: "Formulate business analytics plans or execute digital campaigns.", weights: { communication: 3 } }
-        ]
-    }
-];
-
-// --- DOM Elements ---
-const chatMessages = document.getElementById("chatMessages");
-const quickOptionsContainer = document.getElementById("quickOptionsContainer");
-const chatInputForm = document.getElementById("chatInputForm");
-const chatInput = document.getElementById("chatInput");
-const restartBtn = document.getElementById("restartBtn");
-const mobileToggle = document.getElementById("mobileToggle");
-const sidebar = document.getElementById("sidebar");
-const closeSidebar = document.getElementById("closeSidebar");
-const courseSearch = document.getElementById("courseSearch");
-const courseList = document.getElementById("courseList");
-const courseCount = document.getElementById("courseCount");
-
-// Sidebar overlay setup
-const overlay = document.querySelector(".sidebar-overlay") || (() => {
-    const o = document.createElement("div");
-    o.className = "sidebar-overlay";
-    document.body.appendChild(o);
-    return o;
-})();
-
-// --- Initialization ---
-document.addEventListener("DOMContentLoaded", () => {
-    populateSidebarCourses(ACADEMY_COURSES);
-    startChatbot();
-    setupEventListeners();
-});
-
-// Bind Global click handler for Roadmaps (Accordion functionality)
-window.toggleRoadmapStep = function(stepElement) {
-    // Toggle active class on clicked step
-    const isActive = stepElement.classList.contains("active");
+// ── TAB SWITCHER ──
+function switchTab(tabId) {
+    activeTab = tabId;
     
-    // Optional: Close other steps inside same timeline (Accordion)
-    const timeline = stepElement.closest(".roadmap-timeline");
-    if (timeline) {
-        const steps = timeline.querySelectorAll(".roadmap-step");
-        steps.forEach(s => s.classList.remove("active"));
-    }
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(p => p.classList.add('hidden'));
+    // Show selected
+    document.getElementById(`page-${tabId}`).classList.remove('hidden');
     
-    if (!isActive) {
-        stepElement.classList.add("active");
-    }
-};
-
-// Populate the sidebar course list
-function populateSidebarCourses(coursesToRender) {
-    courseList.innerHTML = "";
-    coursesToRender.forEach(course => {
-        const li = document.createElement("li");
-        li.textContent = course;
-        
-        // Add click listener so clicking sidebar course queries chatbot
-        li.addEventListener("click", () => {
-            handleSidebarCourseClick(course);
-        });
-        
-        courseList.appendChild(li);
+    // Manage active sidebar state styling
+    document.querySelectorAll('#sidebar nav button').forEach(b => {
+        b.classList.remove('bg-brand-500/15', 'text-brand-400', 'border-brand-500/20');
+        b.classList.add('text-gray-400', 'border-transparent');
     });
-    courseCount.textContent = `${coursesToRender.length} Course${coursesToRender.length !== 1 ? 's' : ''}`;
+    
+    const activeBtn = document.getElementById(`tab-${tabId}`);
+    if (activeBtn) {
+        activeBtn.classList.remove('text-gray-400', 'border-transparent');
+        activeBtn.classList.add('bg-brand-500/15', 'text-brand-400', 'border-brand-500/20');
+    }
+
+    // Tab specific initializers
+    if (tabId === 'chat') {
+        renderConversationsList();
+        renderChatHistory();
+    } else if (tabId === 'knowledge') {
+        renderDocumentsTable();
+        renderCategoriesSummary();
+    } else if (tabId === 'career') {
+        renderCareerSkillsPicker();
+    } else if (tabId === 'projects') {
+        renderProjectSkillsPicker();
+    } else if (tabId === 'admin') {
+        renderAdminOverview();
+        renderAdminUsersTable();
+    }
 }
 
-// Start / Restart Chatbot Session
-function startChatbot() {
-    chatMessages.innerHTML = "";
-    currentState = STATES.MAIN_MENU;
-    currentQuestionIndex = 0;
-    userScores = { coding: 0, mathData: 0, creativity: 0, communication: 0, security: 0, cloud: 0 };
-    
-    chatInput.disabled = false;
-    chatInput.placeholder = "Type a message or click an option...";
-    document.querySelector(".chat-footer").style.opacity = "1";
-    chatMessages.classList.remove("inactive");
+// ── COLLAPSE SIDEBAR ──
+function toggleSidebar() {
+    isSidebarCollapsed = !isSidebarCollapsed;
+    const sidebar = document.getElementById('sidebar');
+    const logoText = document.getElementById('logo-text');
+    const collapseIcon = document.getElementById('collapse-icon');
+    const labels = document.querySelectorAll('.nav-label');
+    const userCard = document.getElementById('user-info-card');
 
-    addBotMessage("Welcome to 21st Academy Career Guidance Assistant <i class=\"fa-solid fa-graduation-cap\"></i>");
+    if (isSidebarCollapsed) {
+        sidebar.className = "w-16 bg-surface-800 border-r border-white/[0.06] flex flex-col shrink-0 transition-all duration-300";
+        logoText.classList.add('hidden');
+        collapseIcon.className = "fa-solid fa-angles-right";
+        labels.forEach(l => l.classList.add('hidden'));
+        userCard.classList.add('hidden');
+    } else {
+        sidebar.className = "w-64 bg-surface-800 border-r border-white/[0.06] flex flex-col shrink-0 transition-all duration-300";
+        logoText.classList.remove('hidden');
+        collapseIcon.className = "fa-solid fa-angles-left";
+        labels.forEach(l => l.classList.remove('hidden'));
+        userCard.classList.remove('hidden');
+    }
+}
+
+// ── AI CHAT ENGINE ──
+function renderConversationsList() {
+    const list = document.getElementById('chat-list');
+    list.innerHTML = '';
+    STATE.conversations.forEach(c => {
+        const isActive = c.id === STATE.activeChatId;
+        const item = document.createElement('div');
+        item.className = `group flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 ${isActive ? 'bg-brand-500/15 border border-brand-500/20 text-brand-300' : 'hover:bg-white/[0.04] text-gray-300'}`;
+        item.onclick = () => selectConversation(c.id);
+        
+        item.innerHTML = `
+            <span class="truncate text-xs font-medium flex-1">${c.title}</span>
+            <button onclick="deleteChat(${c.id}, event)" class="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/20 text-gray-500 hover:text-red-400 rounded transition-all">
+                <i class="fa-solid fa-trash-can text-[10px]"></i>
+            </button>
+        `;
+        list.appendChild(item);
+    });
+}
+
+function selectConversation(id) {
+    STATE.activeChatId = id;
+    const current = STATE.conversations.find(c => c.id === id);
+    if (current) {
+        document.getElementById('current-chat-title').innerText = current.title;
+    }
+    renderConversationsList();
+    renderChatHistory();
+}
+
+function startNewChat() {
+    const nextId = STATE.conversations.length > 0 ? Math.max(...STATE.conversations.map(c=>c.id)) + 1 : 1;
+    const newConv = { id: nextId, title: `Chat ${nextId}` };
+    STATE.conversations.unshift(newConv);
+    STATE.chats[nextId] = [
+        { role: 'assistant', content: "Hello! This is a new chat instance. Tell me what information you are searching for or what code we should write." }
+    ];
+    selectConversation(nextId);
+}
+
+function deleteChat(id, event) {
+    event.stopPropagation();
+    STATE.conversations = STATE.conversations.filter(c => c.id !== id);
+    delete STATE.chats[id];
+    if (STATE.activeChatId === id) {
+        STATE.activeChatId = STATE.conversations.length > 0 ? STATE.conversations[0].id : null;
+    }
+    renderConversationsList();
+    renderChatHistory();
+}
+
+function renderChatHistory() {
+    const history = document.getElementById('chat-history');
+    history.innerHTML = '';
     
+    if (!STATE.activeChatId) {
+        history.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-full text-center py-20">
+                <i class="fa-solid fa-message text-gray-700 text-5xl mb-4"></i>
+                <p class="text-gray-400">No active conversations. Start one to begin.</p>
+            </div>
+        `;
+        return;
+    }
+
+    const messages = STATE.chats[STATE.activeChatId] || [];
+    messages.forEach(m => {
+        const isUser = m.role === 'user';
+        const bubble = document.createElement('div');
+        bubble.className = `flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`;
+        
+        let markdownContent = m.content
+            .replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre class="code-block p-4 my-2 rounded-xl font-mono text-xs text-green-300 overflow-x-auto whitespace-pre">$2</pre>')
+            .replace(/`([^`]+)`/g, '<code class="bg-surface-700 px-1 py-0.5 rounded text-green-300 font-mono text-xs">$1</code>')
+            .replace(/\n/g, '<br/>');
+
+        bubble.innerHTML = `
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isUser ? 'bg-brand-500/20 text-brand-400' : 'bg-surface-600 text-purple-400'}">
+                <i class="fa-solid ${isUser ? 'fa-user' : 'fa-robot'} text-xs"></i>
+            </div>
+            <div class="max-w-[75%] flex flex-col ${isUser ? 'items-end' : 'items-start'}">
+                <div class="px-4 py-3 rounded-2xl text-xs leading-relaxed ${isUser ? 'bg-brand-500/10 border border-brand-500/20 text-white rounded-tr-none' : 'bg-surface-700 border border-white/[0.06] text-gray-200 rounded-tl-none'}">
+                    ${markdownContent}
+                </div>
+            </div>
+        `;
+        history.appendChild(bubble);
+    });
+    
+    // Auto-scroll
     setTimeout(() => {
-        displayMainMenu();
-    }, 600);
+        history.scrollTop = history.scrollHeight;
+    }, 50);
 }
 
-// Display Main Menu
-function displayMainMenu() {
-    currentState = STATES.MAIN_MENU;
-    const menuHTML = `
-        <strong>Main Menu:</strong><br>
-        1. Career Assessment Quiz ⭐⭐⭐⭐⭐<br>
-        2. Course Recommendations & Roadmaps<br>
-        3. Academy Information & Catalog<br>
-        4. Contact Details<br>
-        5. Exit<br><br>
-        <em>Please choose an option (1-5) or type a command.</em>
-    `;
-    addBotMessage(menuHTML);
-    
-    setQuickReplies([
-        { text: "1. Take Career Quiz", value: "1" },
-        { text: "2. View Roadmaps", value: "2" },
-        { text: "3. Academy Info", value: "3" },
-        { text: "4. Contact Details", value: "4" },
-        { text: "5. Exit", value: "5" }
-    ]);
-}
-
-// --- Event Listeners Setup ---
-function setupEventListeners() {
-    chatInputForm.addEventListener("submit", (e) => {
+function handleChatSubmit(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        handleUserSubmit();
-    });
-
-    restartBtn.addEventListener("click", () => {
-        addSystemNotification("Resetting conversation...");
-        setTimeout(() => startChatbot(), 300);
-    });
-
-    mobileToggle.addEventListener("click", () => {
-        sidebar.classList.add("open");
-        overlay.style.display = "block";
-    });
-
-    const closeSidebarHandler = () => {
-        sidebar.classList.remove("open");
-        overlay.style.display = "none";
-    };
-
-    closeSidebar.addEventListener("click", closeSidebarHandler);
-    overlay.addEventListener("click", closeSidebarHandler);
-
-    courseSearch.addEventListener("input", (e) => {
-        const query = e.target.value.toLowerCase().trim();
-        const filtered = ACADEMY_COURSES.filter(course => 
-            course.toLowerCase().includes(query)
-        );
-        populateSidebarCourses(filtered);
-    });
+        sendChatMessage();
+    }
 }
 
-// Handle User Input Submission
-function handleUserSubmit() {
-    const text = chatInput.value.trim();
-    if (!text) return;
+function sendChatMessage() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text || !STATE.activeChatId) return;
     
-    addUserMessage(text);
-    chatInput.value = "";
+    input.value = '';
     
-    showTypingIndicator();
+    // Append User Message
+    STATE.chats[STATE.activeChatId].push({ role: 'user', content: text });
+    renderChatHistory();
+
+    // Trigger typing simulator
+    const history = document.getElementById('chat-history');
+    const typingBubble = document.createElement('div');
+    typingBubble.className = "flex gap-3 items-center text-gray-500 text-xs py-2";
+    typingBubble.id = "typing-simulator";
+    typingBubble.innerHTML = `
+        <div class="w-8 h-8 rounded-lg bg-surface-600 flex items-center justify-center">
+            <i class="fa-solid fa-robot"></i>
+        </div>
+        <div class="flex items-center gap-1">
+            <span class="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce"></span>
+            <span class="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+            <span class="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+        </div>
+    `;
+    history.appendChild(typingBubble);
+    history.scrollTop = history.scrollHeight;
+
+    // Simulate RAG reply based on question
     setTimeout(() => {
-        removeTypingIndicator();
-        processInput(text);
-    }, 500);
-}
+        const typ = document.getElementById('typing-simulator');
+        if (typ) typ.remove();
 
-// Process user input based on current state
-function processInput(input) {
-    const cleanInput = input.toLowerCase().trim();
-
-    // Global override commands
-    if (cleanInput === "restart" || cleanInput === "reset") {
-        startChatbot();
-        return;
-    }
-    if (cleanInput === "menu" || cleanInput === "main menu") {
-        addBotMessage("Returning to the Main Menu.");
-        displayMainMenu();
-        return;
-    }
-
-    // STATE 1: MAIN MENU FLOW
-    if (currentState === STATES.MAIN_MENU) {
-        if (cleanInput === "1" || cleanInput.includes("quiz") || cleanInput.includes("assessment")) {
-            startCareerAssessment();
-        } else if (cleanInput === "2" || cleanInput.includes("recommendation") || cleanInput.includes("roadmap")) {
-            startCourseRecommendation();
-        } else if (cleanInput === "3" || cleanInput.includes("academy") || cleanInput.includes("info") || cleanInput.includes("catalog")) {
-            displayAcademyInformation();
-        } else if (cleanInput === "4" || cleanInput.includes("contact") || cleanInput.includes("details")) {
-            displayContactDetails();
-        } else if (cleanInput === "5" || cleanInput.includes("exit")) {
-            exitChatbot();
-        } else {
-            // Keyword match check
-            if (!handleKeywords(cleanInput)) {
-                addBotMessage("Sorry, I don't understand your question. Please select one of the available options.");
-                displayMainMenu();
-            }
-        }
-        return;
-    }
-
-    // STATE 2: CAREER ASSESSMENT FLOW
-    if (currentState === STATES.CAREER_ASSESSMENT) {
-        if (cleanInput === "exit" || cleanInput === "cancel" || cleanInput === "quit") {
-            addBotMessage("Quiz cancelled. Returning to the Main Menu.");
-            displayMainMenu();
-            return;
-        }
-
-        // Look for letter input: A, B, C, D, or E
-        const matchedLetter = ["a", "b", "c", "d", "e"].find(letter => 
-            cleanInput === letter || 
-            cleanInput.startsWith(letter + ".") || 
-            cleanInput.startsWith(letter + " ") ||
-            cleanInput.includes(`option ${letter}`)
-        );
-
-        if (matchedLetter) {
-            const index = matchedLetter.toUpperCase().charCodeAt(0) - 65; // A=0, B=1...
-            const currentQ = ASSESSMENT_QUESTIONS[currentQuestionIndex];
-            
-            if (index >= 0 && index < currentQ.options.length) {
-                // Add score weights
-                const chosenOption = currentQ.options[index];
-                const weights = chosenOption.weights;
-                for (let category in weights) {
-                    userScores[category] += weights[category];
-                }
-                
-                // Advance
-                currentQuestionIndex++;
-                if (currentQuestionIndex < ASSESSMENT_QUESTIONS.length) {
-                    askAssessmentQuestion();
-                } else {
-                    evaluateAssessmentResults();
-                }
-            } else {
-                addBotMessage("Invalid choice. Please select one of the letters provided for this question.");
-                renderMCQOptions(currentQ);
-            }
-        } else {
-            // Check keywords first
-            if (handleKeywords(cleanInput)) {
-                // If keyword, repeat current question after keyword reply
-                setTimeout(() => {
-                    addBotMessage("Resuming your Career Assessment Quiz:");
-                    askAssessmentQuestion();
-                }, 1200);
-            } else {
-                addBotMessage("Please pick a valid option (click a card or type letters A, B, C, D, or E).");
-                const currentQ = ASSESSMENT_QUESTIONS[currentQuestionIndex];
-                renderMCQOptions(currentQ);
-            }
-        }
-        return;
-    }
-
-    // STATE 3: ROADMAP & COURSE RECOMMENDATION SUB-MENU
-    if (currentState === STATES.COURSE_RECOMMENDATION) {
-        if (cleanInput === "7" || cleanInput.includes("back") || cleanInput.includes("menu")) {
-            addBotMessage("Returning to the Main Menu.");
-            displayMainMenu();
-            return;
-        }
-
-        let selectedKey = null;
-        if (cleanInput === "1" || cleanInput.includes("ai") || cleanInput.includes("artificial")) {
-            selectedKey = "AI_ENGINEER";
-        } else if (cleanInput === "2" || cleanInput.includes("full stack") || cleanInput.includes("developer")) {
-            selectedKey = "FULL_STACK_DEVELOPER";
-        } else if (cleanInput === "3" || cleanInput.includes("cyber security") || cleanInput.includes("networking")) {
-            selectedKey = "CYBER_SECURITY_ENGINEER";
-        } else if (cleanInput === "4" || cleanInput.includes("cloud") || cleanInput.includes("devops")) {
-            selectedKey = "CLOUD_ENGINEER";
-        } else if (cleanInput === "5" || cleanInput.includes("business analyst") || cleanInput.includes("analytics")) {
-            selectedKey = "BUSINESS_ANALYST";
-        } else if (cleanInput === "6" || cleanInput.includes("marketing") || cleanInput.includes("digital")) {
-            selectedKey = "DIGITAL_MARKETING_SPECIALIST";
-        }
-
-        if (selectedKey) {
-            displayCareerRoadmap(selectedKey);
-        } else {
-            if (!handleKeywords(cleanInput)) {
-                addBotMessage("Invalid choice. Please select a number (1-7) or select one of the career pathways below.");
-                startCourseRecommendation();
-            }
-        }
-        return;
-    }
-
-    // STATE 4: EXITED STATE
-    if (currentState === STATES.EXITED) {
-        if (cleanInput === "hi" || cleanInput === "hello" || cleanInput.includes("start")) {
-            startChatbot();
-        } else {
-            addBotMessage("Chat session ended. Click 'Restart' or type 'hi' to launch again.");
-            setQuickReplies([{ text: "Restart", value: "hi" }]);
-        }
-    }
-}
-
-// --- Keyword Matching Engine ---
-function handleKeywords(cleanInput) {
-    if (cleanInput === "hi" || cleanInput === "hello" || cleanInput === "hey") {
-        addBotMessage("Hello! Welcome to 21st Academy Career Guidance. How can I help you today? Please choose from the options in the menu below or type your question.");
-        if (currentState === STATES.MAIN_MENU) displayMainMenu();
-        return true;
-    }
-    
-    if (cleanInput.includes("courses") || cleanInput === "course") {
-        let listHTML = "<strong>Our Offered Programs (14 Courses):</strong><ul>";
-        ACADEMY_COURSES.forEach(c => {
-            listHTML += `<li>${c}</li>`;
-        });
-        listHTML += "</ul><br><em>Tip: You can search these courses anytime in the sidebar directory.</em>";
-        addBotMessage(listHTML);
+        let response = "";
+        const lowerQ = text.toLowerCase();
         
-        if (currentState === STATES.MAIN_MENU) {
-            setTimeout(() => displayMainMenu(), 1000);
+        if (lowerQ.includes('leave') || lowerQ.includes('holiday')) {
+            response = "According to our **HR_Leave_Policy_2026.pdf**:\n- Employees are entitled to **20 paid leaves** per annum.\n- Leave requests exceeding 3 working days must be submitted through the portal at least **1 week** in advance.\n- Maternity leave covers 26 weeks, and paternity leave supports 2 weeks.";
+        } else if (lowerQ.includes('postgres') || lowerQ.includes('database') || lowerQ.includes('scaling')) {
+            response = "I searched **Database_Scaling_Guide.md**. It lists the following recommendations:\n- Set custom connection limits: `max_connections = 500`.\n- Utilize connection pooling at the service layer:\n```python\n# Postgres connection pool sizing configuration\nasync_pool = asyncpg.create_pool(\n    dsn=settings.DATABASE_URL,\n    min_size=10,\n    max_size=100\n)\n```";
+        } else if (lowerQ.includes('travel') || lowerQ.includes('flight')) {
+            response = "Found details in **Office_Travel_Guidelines.docx**:\n- Flight tickets must be booked via the Corporate Portal.\n- Economy class is standard for flights under 6 hours.\n- Daily meals allowance is capped at **$60/day**.";
+        } else {
+            response = "This is a local secure model response running internally on Ollama (Llama-3). Since RAG matches did not return specific details for your query, I am responding from my general pre-trained knowledge base parameters. Let me know if I should formulate code blocks or roadmap templates.";
         }
-        return true;
-    }
-    
-    if (cleanInput.includes("fee") || cleanInput.includes("cost") || cleanInput.includes("price")) {
-        addBotMessage("Course fees depend on the training program (e.g. Full Stack vs Data Science). We provide installment patterns and discounts. Call our office at <strong>+91 9944747090</strong> or email <strong>admin@21stacademy.in</strong> for customized pricing quotes.");
-        if (currentState === STATES.MAIN_MENU) {
-            setTimeout(() => displayMainMenu(), 1000);
-        }
-        return true;
-    }
-    
-    if (cleanInput.includes("contact") || cleanInput.includes("phone") || cleanInput.includes("email") || cleanInput.includes("website")) {
-        displayContactDetails();
-        return true;
-    }
-    
-    if (cleanInput.includes("address") || cleanInput.includes("location") || cleanInput.includes("where")) {
-        addBotMessage(`<strong>Academy Address:</strong><br>${CONTACT_INFO.address}<br><br>Learn more: <a href="${CONTACT_INFO.website}" target="_blank">${CONTACT_INFO.website}</a>`);
-        if (currentState === STATES.MAIN_MENU) {
-            setTimeout(() => displayMainMenu(), 1000);
-        }
-        return true;
-    }
-    
-    if (cleanInput.includes("career") || cleanInput.includes("assessment") || cleanInput.includes("quiz")) {
-        addBotMessage("Take our <strong>Career Assessment Quiz</strong> to calculate your scores and generate custom roadmaps. Choose option 1 in the menu!");
-        if (currentState === STATES.MAIN_MENU) {
-            setTimeout(() => displayMainMenu(), 1000);
-        }
-        return true;
-    }
-    
-    if (cleanInput.includes("placement") || cleanInput.includes("jobs") || cleanInput.includes("job") || cleanInput.includes("salary")) {
-        addBotMessage("21st Academy provides 100% placement support. We feature resume reviews, mock interviews, and organize recruitment drives with MNC partners.");
-        if (currentState === STATES.MAIN_MENU) {
-            setTimeout(() => displayMainMenu(), 1000);
-        }
-        return true;
-    }
-    
-    if (cleanInput.includes("training") || cleanInput.includes("class") || cleanInput.includes("learn")) {
-        addBotMessage("Our training model is 100% hands-on with live labs. We offer flexible batches (both online live classes and physical classroom batches in Chennai).");
-        if (currentState === STATES.MAIN_MENU) {
-            setTimeout(() => displayMainMenu(), 1000);
-        }
-        return true;
-    }
-    
-    return false;
+
+        STATE.chats[STATE.activeChatId].push({ role: 'assistant', content: response });
+        renderChatHistory();
+        
+        // Update admin stats
+        STATE.totalQuestions = (STATE.totalQuestions || 168) + 1;
+        document.getElementById('adm-count-msg').innerText = STATE.totalQuestions;
+    }, 1200);
 }
 
-// --- Menu Functions ---
+function toggleRAG() {
+    ragEnabled = !ragEnabled;
+    const btn = document.getElementById('rag-toggle');
+    if (ragEnabled) {
+        btn.className = "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border bg-emerald-500/10 border-emerald-500/20 text-emerald-400 text-xs font-semibold transition-all";
+        btn.innerHTML = `<i class="fa-solid fa-database"></i> RAG Active`;
+    } else {
+        btn.className = "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border bg-surface-700 border-white/[0.08] text-gray-500 text-xs font-semibold transition-all";
+        btn.innerHTML = `<i class="fa-solid fa-ban"></i> RAG Disabled`;
+    }
+}
 
-// 1. Career Assessment Flow
-function startCareerAssessment() {
-    currentState = STATES.CAREER_ASSESSMENT;
-    currentQuestionIndex = 0;
-    userScores = { coding: 0, mathData: 0, creativity: 0, communication: 0, security: 0, cloud: 0 };
+function exportChat() {
+    if (!STATE.activeChatId) return;
+    const messages = STATE.chats[STATE.activeChatId] || [];
+    const textData = messages.map(m => `[${m.role.toUpperCase()}]: ${m.content}`).join("\n\n");
     
-    addBotMessage("Starting the Career Assessment! I will ask you <strong>10 multiple-choice questions</strong>. Click on options or type letters (A, B, C, D, E). Type 'exit' to cancel.");
+    const blob = new Blob([textData], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `chat_export_${STATE.activeChatId}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// ── KNOWLEDGE BASE MANAGER ──
+function renderDocumentsTable() {
+    const table = document.getElementById('kb-document-table');
+    table.innerHTML = '';
+    
+    STATE.documents.forEach(d => {
+        const tr = document.createElement('tr');
+        tr.className = "border-b border-white/[0.04] hover:bg-white/[0.02]";
+        
+        const tagBadges = d.tags.map(t => `<span class="badge text-[9px] bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2 py-0.5 rounded-full mr-1"><i class="fa-solid fa-tag text-[8px] mr-1"></i>${t}</span>`).join('');
+        
+        let icon = "fa-file-pdf text-red-400";
+        if (d.name.endsWith('.docx')) icon = "fa-file-word text-blue-400";
+        if (d.name.endsWith('.xlsx')) icon = "fa-file-excel text-emerald-400";
+        if (d.name.endsWith('.md')) icon = "fa-file-code text-purple-400";
+
+        tr.innerHTML = `
+            <td class="py-3 pr-4 flex items-center gap-2">
+                <i class="fa-solid ${icon} text-sm"></i>
+                <span class="font-medium text-white truncate max-w-[200px]">${d.name}</span>
+            </td>
+            <td class="py-3 px-4">${d.category}</td>
+            <td class="py-3 px-4">v${d.version}</td>
+            <td class="py-3 px-4 flex flex-wrap gap-1">${tagBadges}</td>
+            <td class="py-3 px-4 text-gray-500">${d.date}</td>
+            <td class="py-3 pl-4 text-right">
+                <button onclick="deleteDocument(${d.id})" class="p-1 hover:bg-red-500/20 text-gray-500 hover:text-red-400 rounded transition-all">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </td>
+        `;
+        table.appendChild(tr);
+    });
+}
+
+function renderCategoriesSummary() {
+    const breakdown = document.getElementById('category-breakdown');
+    breakdown.innerHTML = '';
+    
+    const cats = STATE.documents.reduce((acc, d) => {
+        acc[d.category] = (acc[d.category] || 0) + 1;
+        return acc;
+    }, {});
+    
+    Object.entries(cats).forEach(([name, count]) => {
+        const row = document.createElement('div');
+        row.className = "flex items-center justify-between py-2 px-3 rounded-lg bg-surface-700/40 text-xs";
+        row.innerHTML = `
+            <span class="text-gray-300 font-medium">${name}</span>
+            <span class="badge bg-brand-500/10 text-brand-400 border border-brand-500/20 px-2 py-0.5 rounded-full">${count} Files</span>
+        `;
+        breakdown.appendChild(row);
+    });
+    
+    // Update admin stats
+    document.getElementById('adm-count-docs').innerText = STATE.documents.length;
+}
+
+function mockUploadFile(files) {
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    const category = document.getElementById('kb-category').value.trim() || 'General';
+    const tagStr = document.getElementById('kb-tags').value.trim();
+    const tags = tagStr ? tagStr.split(',').map(t=>t.trim()).filter(Boolean) : ["uploaded"];
+    
+    const dropzone = document.getElementById('dropzone');
+    const oldContent = dropzone.innerHTML;
+    
+    dropzone.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-4">
+            <i class="fa-solid fa-circle-notch fa-spin text-brand-500 text-2xl mb-2"></i>
+            <p class="text-xs text-brand-400 font-semibold">Chunking and Vectorizing ${file.name}...</p>
+        </div>
+    `;
     
     setTimeout(() => {
-        askAssessmentQuestion();
+        dropzone.innerHTML = oldContent;
+        
+        // Find existing doc versioning
+        const match = STATE.documents.find(d => d.name === file.name);
+        const version = match ? match.version + 1 : 1;
+        
+        if (match) {
+            // Remove previous version
+            STATE.documents = STATE.documents.filter(d => d.id !== match.id);
+        }
+
+        const nextId = STATE.documents.length > 0 ? Math.max(...STATE.documents.map(d=>d.id)) + 1 : 1;
+        const newDoc = {
+            id: nextId,
+            name: file.name,
+            category: category,
+            version: version,
+            tags: tags,
+            date: new Date().toISOString().split('T')[0]
+        };
+        
+        STATE.documents.unshift(newDoc);
+        renderDocumentsTable();
+        renderCategoriesSummary();
+        alert(`Successfully indexed "${file.name}" (version ${version}) into PostgreSQL + pgvector!`);
+    }, 1500);
+}
+
+function deleteDocument(id) {
+    const doc = STATE.documents.find(d => d.id === id);
+    if (!doc) return;
+    if (confirm(`Are you sure you want to remove "${doc.name}" from vector database indexes?`)) {
+        STATE.documents = STATE.documents.filter(d => d.id !== id);
+        renderDocumentsTable();
+        renderCategoriesSummary();
+    }
+}
+
+function testSemanticSearch() {
+    const query = document.getElementById('sandbox-search-input').value.trim();
+    const resultsPanel = document.getElementById('sandbox-results');
+    if (!query) return;
+    
+    resultsPanel.innerHTML = `
+        <div class="flex justify-center py-4">
+            <i class="fa-solid fa-spinner fa-spin text-brand-400"></i>
+        </div>
+    `;
+    
+    setTimeout(() => {
+        resultsPanel.innerHTML = '';
+        const match = STATE.documents.map(d => {
+            let chunkText = "";
+            let score = 0.85;
+            if (d.name.includes("HR_Leave")) {
+                chunkText = "Employees receive 20 paid leave days per calendar year. Request approval window: at least 1 week for extended vacations.";
+            } else if (d.name.includes("Scaling")) {
+                chunkText = "To avoid max connection exceptions, implement pooling. Sample: asyncpg.create_pool(min_size=10, max_size=100)";
+            } else {
+                chunkText = "Corporate guidelines state that expenses must be cleared by accounting within the active budget cycle.";
+            }
+            return { name: d.name, text: chunkText, score: (score - Math.random()*0.1).toFixed(4) };
+        });
+
+        match.forEach(r => {
+            const card = document.createElement('div');
+            card.className = "p-3 rounded-lg bg-surface-700/50 border border-white/[0.04] space-y-1.5";
+            card.innerHTML = `
+                <div class="flex items-center justify-between text-[10px]">
+                    <span class="text-brand-400 font-semibold truncate w-36"><i class="fa-solid fa-file-shield mr-1"></i>${r.name}</span>
+                    <span class="text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">cosine: ${r.score}</span>
+                </div>
+                <p class="text-[11px] text-gray-300 leading-relaxed">${r.text}</p>
+            `;
+            resultsPanel.appendChild(card);
+        });
     }, 800);
 }
 
-// Ask MCQ Question
-function askAssessmentQuestion() {
-    const q = ASSESSMENT_QUESTIONS[currentQuestionIndex];
-    addBotMessage(`<strong>Question ${currentQuestionIndex + 1} of 10:</strong><br>${q.question}`);
-    
-    setTimeout(() => {
-        renderMCQOptions(q);
-    }, 200);
-}
+// ── CAREER GUIDANCE HUB ──
+const CAREER_SKILLS_LIST = ["Python", "JavaScript", "TypeScript", "React", "Node.js", "Java", "C++", "SQL", "Docker", "Kubernetes", "AWS", "Machine Learning", "FastAPI"];
 
-// Render Option Cards in Chat History
-function renderMCQOptions(q) {
-    const wrapperId = `mcq-wrapper-${currentQuestionIndex}`;
-    
-    // Clear quick options during questions to focus on MCQ options
-    quickOptionsContainer.innerHTML = "";
-    
-    let mcqHTML = `<div class="mcq-options" id="${wrapperId}">`;
-    q.options.forEach(opt => {
-        mcqHTML += `
-            <button class="mcq-option" data-value="${opt.letter}">
-                <span class="option-letter">${opt.letter}</span>
-                <span>${opt.text}</span>
-            </button>
-        `;
+function renderCareerSkillsPicker() {
+    const list = document.getElementById('skillsets-picker');
+    list.innerHTML = '';
+    CAREER_SKILLS_LIST.forEach(s => {
+        const active = STATE.careerSkills.includes(s);
+        const btn = document.createElement('button');
+        btn.onclick = () => toggleCareerSkill(s);
+        btn.className = `px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${active ? 'bg-brand-500/20 border-brand-500/30 text-brand-300' : 'bg-surface-700/50 border-white/[0.08] text-gray-400'}`;
+        btn.innerText = s;
+        list.appendChild(btn);
     });
-    mcqHTML += `</div>`;
-    
-    addBotMessage(mcqHTML);
-    
-    // Add Event Listeners to rendered buttons in the chat stream
-    setTimeout(() => {
-        const mcqWrapper = document.getElementById(wrapperId);
-        if (mcqWrapper) {
-            const buttons = mcqWrapper.querySelectorAll(".mcq-option");
-            buttons.forEach(btn => {
-                btn.addEventListener("click", () => {
-                    const letter = btn.getAttribute("data-value");
-                    chatInput.value = letter;
-                    handleUserSubmit();
-                });
-            });
-        }
-    }, 100);
-
-    setQuickReplies([
-        { text: "Cancel Quiz", value: "exit" }
-    ]);
 }
 
-// Evaluate Assessment Results & Display Match Recommendation Gauges
-function evaluateAssessmentResults() {
-    showTypingIndicator();
-    
-    setTimeout(() => {
-        removeTypingIndicator();
-        
-        // Compute Career Fits
-        const rawMatches = {
-            AI_ENGINEER: userScores.mathData * 1.0 + userScores.coding * 0.4,
-            FULL_STACK_DEVELOPER: userScores.coding * 1.0 + userScores.creativity * 0.6,
-            CYBER_SECURITY_ENGINEER: userScores.security * 1.0 + userScores.coding * 0.3,
-            CLOUD_ENGINEER: userScores.cloud * 1.0 + userScores.coding * 0.3,
-            BUSINESS_ANALYST: userScores.communication * 0.8 + userScores.mathData * 0.5,
-            DIGITAL_MARKETING_SPECIALIST: userScores.communication * 0.8 + userScores.creativity * 0.6
-        };
-
-        // Determine Max Score to normalize
-        let maxScore = Math.max(...Object.values(rawMatches));
-        if (maxScore === 0) maxScore = 1; // Prevent division by zero
-        
-        // Scale values to match percentages (top match ~96%, floor at 35%)
-        const results = Object.keys(rawMatches).map(key => {
-            const raw = rawMatches[key];
-            const percent = Math.max(35, Math.round((raw / maxScore) * 96));
-            return {
-                key: key,
-                title: CAREERS[key].title,
-                percent: percent
-            };
-        });
-
-        // Sort by highest match percent
-        results.sort((a, b) => b.percent - a.percent);
-        const top3 = results.slice(0, 3);
-        
-        // Render Top 3 Match Gauges
-        let resultsHTML = `
-            <div class="result-card" style="border: 1px solid var(--secondary);">
-                <div class="result-card-title">
-                    <i class="fa-solid fa-chart-bar" style="color: var(--secondary);"></i> Your Top Career Matches
-                </div>
-                <div class="match-container">
-        `;
-        
-        top3.forEach(res => {
-            resultsHTML += `
-                <div class="match-row">
-                    <div class="match-label-row">
-                        <span class="match-label">
-                            <i class="fa-solid fa-square-poll-horizontal" style="color: var(--primary);"></i> ${res.title}
-                        </span>
-                        <span class="match-percent">${res.percent}% Fit</span>
-                    </div>
-                    <div class="match-bar-bg">
-                        <div class="match-bar-fill" style="width: ${res.percent}%"></div>
-                    </div>
-                </div>
-            `;
-        });
-        
-        resultsHTML += `
-                </div>
-            </div>
-        `;
-
-        addBotMessage("Assessment complete! Here are your ranked career recommendations based on your scoring vector:");
-        addBotMessage(resultsHTML);
-        
-        // Offer buttons to view roadmaps for top recommendations
-        setTimeout(() => {
-            addBotMessage(`Choose a pathway below to view its **Step-by-Step Learning Roadmap**:`);
-            const roadmapChips = top3.map(res => {
-                return { text: `Roadmap: ${res.title}`, value: `Roadmap for ${res.title}` };
-            });
-            roadmapChips.push({ text: "Main Menu", value: "menu" });
-            setQuickReplies(roadmapChips);
-            currentState = STATES.COURSE_RECOMMENDATION; // Switch state to handle roadmap clicks
-        }, 1200);
-
-    }, 1500);
+function toggleCareerSkill(skill) {
+    if (STATE.careerSkills.includes(skill)) {
+        STATE.careerSkills = STATE.careerSkills.filter(s => s !== skill);
+    } else {
+        STATE.careerSkills.push(skill);
+    }
+    renderCareerSkillsPicker();
 }
 
-// 2. Start Course Recommendation Sub-menu
-function startCourseRecommendation() {
-    currentState = STATES.COURSE_RECOMMENDATION;
-    const recMenuHTML = `
-        <strong>Select a career path to view its Learning Roadmap:</strong><br>
-        1. AI Engineer<br>
-        2. Full Stack Developer<br>
-        3. Cyber Security Engineer<br>
-        4. Cloud Engineer<br>
-        5. Business Analyst<br>
-        6. Digital Marketing Specialist<br>
-        7. Back to Main Menu
-    `;
-    addBotMessage(recMenuHTML);
-    
-    setQuickReplies([
-        { text: "1. AI Engineer", value: "1" },
-        { text: "2. Full Stack Dev", value: "2" },
-        { text: "3. Cyber Security", value: "3" },
-        { text: "4. Cloud Engineer", value: "4" },
-        { text: "5. Business Analyst", value: "5" },
-        { text: "6. Digital Marketer", value: "6" },
-        { text: "Back to Main Menu", value: "7" }
-    ]);
+function addCustomSkill() {
+    const input = document.getElementById('custom-skill-input');
+    const skill = input.value.trim();
+    if (skill && !STATE.careerSkills.includes(skill)) {
+        STATE.careerSkills.push(skill);
+        input.value = '';
+        renderCareerSkillsPicker();
+    }
 }
 
-// Render Interactive Career Roadmap
-function displayCareerRoadmap(careerKey) {
-    const career = CAREERS[careerKey];
+function triggerCareerAssess() {
+    document.getElementById('career-form-view').classList.add('hidden');
     
-    let roadmapHTML = `
-        <div class="result-card" style="border-left: 4px solid var(--primary); padding-bottom: 2px;">
-            <div class="result-card-title">
-                <i class="fa-solid fa-route" style="color: var(--primary);"></i> ${career.title} Roadmap
-            </div>
-            <p style="font-size: 0.82rem; color: var(--text-secondary); margin: 6px 0 12px 0; line-height: 1.4;">
-                ${career.desc}
-            </p>
-            <div class="roadmap-timeline">
-    `;
-
-    career.roadmap.forEach((step, idx) => {
-        // First step open by default
-        const activeClass = idx === 0 ? "active" : "";
-        roadmapHTML += `
-            <div class="roadmap-step ${activeClass}" onclick="toggleRoadmapStep(this)">
-                <div class="roadmap-step-icon">${idx + 1}</div>
-                <div class="roadmap-step-header">
-                    <h4>${step.phase}</h4>
-                    <i class="fa-solid fa-chevron-down toggle-arrow"></i>
-                </div>
-                <div class="roadmap-step-content">
-                    <p>${step.desc}</p>
-                    <div class="roadmap-tool-badges">
-                        ${step.tools.map(tool => `<span class="roadmap-tool-badge">${tool}</span>`).join("")}
-                    </div>
-                </div>
-            </div>
-        `;
-    });
-
-    roadmapHTML += `
-            </div>
-            <div class="result-card-courses" style="margin-top: 14px; border-top: 1px solid var(--border-color); padding-top: 10px;">
-                <h4>Academy Core Classes:</h4>
-                <div class="course-tags">
-                    ${career.courses.map(c => `<span class="course-tag">${c}</span>`).join("")}
-                </div>
-            </div>
+    // Create loader spinner
+    const results = document.getElementById('career-results-view');
+    results.classList.remove('hidden');
+    results.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-24 text-center">
+            <i class="fa-solid fa-route fa-spin text-brand-500 text-4xl mb-4"></i>
+            <h3 class="text-white font-semibold text-sm">LLM evaluating skills graph compatibility...</h3>
+            <p class="text-gray-500 text-xs mt-1">Generating custom milestones and roadmap phases</p>
         </div>
     `;
-
-    addBotMessage(`Here is the step-by-step career path for <strong>${career.title}</strong>. Click on any phase header to expand details:`);
-    addBotMessage(roadmapHTML);
-
+    
     setTimeout(() => {
-        addBotMessage("Select another roadmap to inspect or return to Main Menu:");
-        setQuickReplies([
-            { text: "Career Quiz", value: "1" },
-            { text: "View Roadmaps", value: "2" },
-            { text: "Academy Information", value: "3" },
-            { text: "Main Menu", value: "menu" }
-        ]);
-        currentState = STATES.MAIN_MENU; // Reset state back to main menu
+        results.innerHTML = `
+            <button onclick="resetCareerAssessment()" class="py-1.5 px-3 bg-white/[0.06] hover:bg-white/[0.10] border border-white/[0.08] rounded-lg text-xs font-semibold text-white mb-6">
+                <i class="fa-solid fa-arrow-left mr-1.5"></i> Start New Evaluation
+            </button>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="glass-card p-5 rounded-xl space-y-3">
+                    <h3 class="font-semibold text-white text-xs uppercase tracking-wider text-brand-400">Best Career Paths</h3>
+                    <div class="space-y-2">
+                        <div class="p-3 bg-brand-500/10 border border-brand-500/20 rounded-lg">
+                            <span class="text-[9px] text-brand-400 font-bold block mb-1">BEST MATCH</span>
+                            <span class="text-xs font-semibold text-white">Cloud Infrastructure Architect</span>
+                        </div>
+                        <div class="p-3 bg-surface-700/50 border border-white/[0.06] rounded-lg">
+                            <span class="text-xs font-semibold text-gray-300">Senior Distributed Systems Engineer</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-card p-5 rounded-xl lg:col-span-2 space-y-3">
+                    <h3 class="font-semibold text-white text-xs uppercase tracking-wider text-emerald-400">Skills Gap Analysis</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <span class="text-[10px] text-gray-400 font-bold block mb-2">MATCHED SKILLS</span>
+                            <div class="flex flex-wrap gap-1.5">
+                                ${STATE.careerSkills.map(s=>`<span class="badge text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">${s}</span>`).join('')}
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-gray-400 font-bold block mb-2">MISSING SKILLS</span>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span class="badge text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-2.5 py-0.5 rounded-full">Kubernetes</span>
+                                <span class="badge text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-2.5 py-0.5 rounded-full">System Design</span>
+                                <span class="badge text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-2.5 py-0.5 rounded-full">gRPC & Protobuf</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-6 rounded-xl space-y-4">
+                <h3 class="font-semibold text-white text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-map-location-dot text-purple-400"></i> Career Transformation Roadmap
+                </h3>
+                <div class="space-y-4 border-l border-white/[0.08] ml-4 pl-6 relative">
+                    <div class="relative">
+                        <div class="absolute -left-[31px] top-0 w-4.5 h-4.5 rounded-full bg-brand-500/20 border border-brand-500 flex items-center justify-center text-[10px] text-white font-bold">1</div>
+                        <div>
+                            <span class="text-xs font-semibold text-white block">Phase 1: Foundation Upskilling</span>
+                            <span class="text-[10px] text-brand-400 block mb-1">Month 1-2</span>
+                            <p class="text-[11px] text-gray-400 leading-relaxed">Focus on advanced distributed system design paradigms, concurrency, and rate-limiting patterns using local libraries.</p>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <div class="absolute -left-[31px] top-0 w-4.5 h-4.5 rounded-full bg-brand-500/20 border border-brand-500 flex items-center justify-center text-[10px] text-white font-bold">2</div>
+                        <div>
+                            <span class="text-xs font-semibold text-white block">Phase 2: Containers & Deployments</span>
+                            <span class="text-[10px] text-brand-400 block mb-1">Month 3-4</span>
+                            <p class="text-[11px] text-gray-400 leading-relaxed">Implement containerized scaling microservices. Deploy test nodes utilizing local Kubernetes/Minikube nodes.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-6 rounded-xl space-y-4">
+                <h3 class="font-semibold text-white text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-graduation-cap text-amber-400"></i> Course Recommendations
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-4 rounded-xl bg-surface-700/50 border border-white/[0.06] space-y-1.5">
+                        <span class="text-xs font-semibold text-white">Distributed Systems: Architecture & Principles</span>
+                        <span class="text-[10px] text-amber-400 block font-medium">Internal Corporate Learning Portal</span>
+                        <p class="text-[11px] text-gray-500">Covers consensus algorithms, consistent hashing, and data partitioning concepts.</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-surface-700/50 border border-white/[0.06] space-y-1.5">
+                        <span class="text-xs font-semibold text-white">Production Kubernetes & Scaling Mechanics</span>
+                        <span class="text-[10px] text-amber-400 block font-medium">Self-Guided Study Roadmap</span>
+                        <p class="text-[11px] text-gray-500">Focuses on namespace definitions, network policies, and persistent storage configurations.</p>
+                    </div>
+                </div>
+            </div>
+        `;
     }, 1500);
 }
 
-// 3. Display Academy Information
-function displayAcademyInformation() {
-    let coursesListHTML = "<ul style='margin-bottom: 12px;'>";
-    ACADEMY_COURSES.forEach(c => {
-        coursesListHTML += `<li>${c}</li>`;
-    });
-    coursesListHTML += "</ul>";
+function resetCareerAssessment() {
+    document.getElementById('career-results-view').classList.add('hidden');
+    document.getElementById('career-form-view').classList.remove('hidden');
+}
 
-    const infoHTML = `
-        <strong>21st Academy Information:</strong><br><br>
-        <strong>Offered Training Programs:</strong>
-        ${coursesListHTML}
-        <strong>Academy Address:</strong><br>
-        ${CONTACT_INFO.address}<br><br>
-        Our syllabus focuses on 100% practical, hands-on labs, certifications alignment, and job training.
-    `;
-    addBotMessage(infoHTML);
+// ── RESUME ANALYZER ──
+let selectedResumeFile = null;
+
+function loadSelectedResume(files) {
+    if (!files || files.length === 0) return;
+    selectedResumeFile = files[0];
     
-    if (currentState === STATES.MAIN_MENU) {
-        setTimeout(() => displayMainMenu(), 1500);
+    document.getElementById('resume-filename').innerText = selectedResumeFile.name;
+    document.getElementById('resume-filesize').innerText = `${(selectedResumeFile.size/1024).toFixed(1)} KB`;
+    document.getElementById('selected-resume-card').classList.remove('hidden');
+}
+
+function clearSelectedResume() {
+    selectedResumeFile = null;
+    document.getElementById('selected-resume-card').classList.add('hidden');
+    document.getElementById('resume-file').value = '';
+}
+
+function triggerResumeAnalysis() {
+    if (!selectedResumeFile) {
+        alert("Please select a resume file first.");
+        return;
     }
-}
-
-// 4. Display Contact Details
-function displayContactDetails() {
-    const contactHTML = `
-        <strong>21st Academy Contact Details:</strong><br><br>
-        <i class="fa-solid fa-phone" style="color: var(--primary);"></i> <strong>Phone:</strong> <a href="tel:${CONTACT_INFO.phone.replace(/\s+/g, '')}">${CONTACT_INFO.phone}</a><br>
-        <i class="fa-solid fa-envelope" style="color: var(--primary);"></i> <strong>Email:</strong> <a href="mailto:${CONTACT_INFO.email}">${CONTACT_INFO.email}</a><br>
-        <i class="fa-solid fa-globe" style="color: var(--primary);"></i> <strong>Website:</strong> <a href="${CONTACT_INFO.website}" target="_blank">${CONTACT_INFO.website}</a><br>
-        <i class="fa-solid fa-location-dot" style="color: var(--primary);"></i> <strong>Address:</strong> Poonamallee, Chennai (Hayath Plaza, Nambi St.)
+    
+    const uploadView = document.getElementById('resume-upload-view');
+    uploadView.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-20 text-center">
+            <i class="fa-solid fa-spinner fa-spin text-brand-500 text-4xl mb-4"></i>
+            <h3 class="text-white font-semibold text-sm">AI Grader extracting resume metrics...</h3>
+            <p class="text-gray-500 text-xs mt-1">Evaluating format consistency, keyword checks, and skill groups</p>
+        </div>
     `;
-    addBotMessage(contactHTML);
     
-    if (currentState === STATES.MAIN_MENU) {
-        setTimeout(() => displayMainMenu(), 1200);
-    }
-}
-
-// 5. Exit Chatbot
-function exitChatbot() {
-    currentState = STATES.EXITED;
-    addBotMessage("Thank you for visiting 21st Academy Career Guidance Assistant! If you want to start again, simply type 'hi' or click 'Restart'.");
-    
-    chatInput.disabled = true;
-    chatInput.placeholder = "Chat session ended. Click Restart to begin.";
-    document.querySelector(".chat-footer").style.opacity = "0.6";
-    chatMessages.classList.add("inactive");
-    
-    setQuickReplies([
-        { text: "Restart Session", value: "hi" }
-    ]);
-}
-
-// --- Sidebar Interaction ---
-function handleSidebarCourseClick(courseName) {
-    // Add user question bubble
-    addUserMessage(`Tell me about the ${courseName} course.`);
-    
-    showTypingIndicator();
     setTimeout(() => {
-        removeTypingIndicator();
+        uploadView.className = "glass-card p-8 rounded-2xl max-w-xl mx-auto space-y-6 text-center";
+        uploadView.innerHTML = `
+            <div onclick="document.getElementById('resume-file').click()" class="border-2 border-dashed border-white/[0.08] hover:border-brand-500/50 rounded-xl p-10 cursor-pointer bg-white/[0.01] transition-all">
+                <i class="fa-solid fa-file-pdf text-4xl text-gray-500 mb-3"></i>
+                <p class="text-xs text-gray-300 font-semibold">Drop your resume file or browse</p>
+                <p class="text-[10px] text-gray-600 mt-1">Supports PDF & DOCX formats (Max 5MB)</p>
+                <input type="file" id="resume-file" class="hidden" onchange="loadSelectedResume(this.files)">
+            </div>
+
+            <div id="selected-resume-card" class="hidden p-3 rounded-lg bg-surface-700 border border-white/[0.06] flex items-center justify-between text-left">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-file text-brand-400 text-sm"></i>
+                    <div>
+                        <p id="resume-filename" class="text-xs font-semibold text-white truncate w-48"></p>
+                        <p id="resume-filesize" class="text-[10px] text-gray-500"></p>
+                    </div>
+                </div>
+                <button onclick="clearSelectedResume()" class="text-gray-500 hover:text-red-400"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <button onclick="triggerResumeAnalysis()" class="w-full py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-lg text-xs font-bold shadow-md">
+                Analyze Resume Profile
+            </button>
+        `;
         
-        // Find matching careers for this course
-        let matchedCareers = [];
-        for (let key in CAREERS) {
-            if (CAREERS[key].courses.includes(courseName)) {
-                matchedCareers.push(CAREERS[key]);
-            }
-        }
+        document.getElementById('resume-upload-view').classList.add('hidden');
+        document.getElementById('resume-results-view').classList.remove('hidden');
         
-        let reply = `<strong>${courseName}</strong> is one of our key industry-relevant training programs. It is taught 100% practically with live project labs.`;
+        // Load Score Dial Values
+        const score = 84;
+        const circ = 251.2; // 2 * pi * r (r=40)
+        const offset = circ - (score / 100) * circ;
         
-        if (matchedCareers.length > 0) {
-            const careersList = matchedCareers.map(c => `<strong>${c.title}</strong>`).join(" and ");
-            reply += `<br><br>This course is a core module in our learning pathway for becoming a ${careersList}.`;
-            
-            addBotMessage(reply);
-            
-            // Render chips to view the roadmap for the matching career
-            setTimeout(() => {
-                const chips = matchedCareers.map(c => {
-                    return { text: `View ${c.title} Roadmap`, value: `Roadmap for ${c.title}` };
-                });
-                chips.push({ text: "Main Menu", value: "menu" });
-                setQuickReplies(chips);
-                currentState = STATES.COURSE_RECOMMENDATION; // Switch state
-            }, 800);
-        } else {
-            reply += `<br><br>We offer personalized certification guidance for this course. Would you like to consult contact details or run the career quiz?`;
-            addBotMessage(reply);
-            
-            setTimeout(() => {
-                setQuickReplies([
-                    { text: "Take Career Quiz", value: "1" },
-                    { text: "Contact Details", value: "4" },
-                    { text: "Main Menu", value: "menu" }
-                ]);
-            }, 800);
-        }
+        document.getElementById('score-circle-progress').setAttribute('stroke-dashoffset', offset);
+        document.getElementById('resume-score-value').innerText = `${score}%`;
         
-        // If sidebar was open in mobile, close it
-        sidebar.classList.remove("open");
-        overlay.style.display = "none";
-        
-    }, 600);
+        // Extracted Skills list mock
+        const skills = ["Python", "SQL", "Docker", "FastAPI", "React", "Linux System Administration"];
+        const skillsContainer = document.getElementById('resume-extracted-skills');
+        skillsContainer.innerHTML = skills.map(s => `<span class="badge text-xs bg-brand-500/10 text-brand-300 border border-brand-500/20 px-3 py-1 rounded-xl">${s}</span>`).join('');
+
+        // Render Suggestions Groups
+        const suggestionsGrid = document.getElementById('resume-suggestions-grid');
+        suggestionsGrid.innerHTML = `
+            <div class="glass-card p-5 rounded-xl space-y-3">
+                <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <i class="fa-solid fa-circle-check"></i> Formatting Strengths
+                </h4>
+                <ul class="space-y-1.5 text-[11px] text-gray-300">
+                    <li class="flex items-start gap-1.5"><i class="fa-solid fa-caret-right text-brand-400 mt-0.5 shrink-0"></i>Header sizing and margins are consistent and clear.</li>
+                    <li class="flex items-start gap-1.5"><i class="fa-solid fa-caret-right text-brand-400 mt-0.5 shrink-0"></i>Includes distinct technical skills sections.</li>
+                </ul>
+            </div>
+            <div class="glass-card p-5 rounded-xl space-y-3">
+                <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Improvements Required
+                </h4>
+                <ul class="space-y-1.5 text-[11px] text-gray-300">
+                    <li class="flex items-start gap-1.5"><i class="fa-solid fa-caret-right text-amber-400 mt-0.5 shrink-0"></i>Missing keywords: Kubernetes, CI/CD, AWS Cloud.</li>
+                    <li class="flex items-start gap-1.5"><i class="fa-solid fa-caret-right text-amber-400 mt-0.5 shrink-0"></i>Add specific numeric parameters (e.g. % performance increase) to experience descriptions.</li>
+                </ul>
+            </div>
+        `;
+    }, 1500);
 }
 
-// --- UI Messaging Helpers ---
-
-// Add a Bot Message bubble
-function addBotMessage(htmlContent) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "message-wrapper bot";
-    
-    const bubble = document.createElement("div");
-    bubble.className = "message-bubble";
-    bubble.innerHTML = htmlContent;
-    
-    const timeSpan = document.createElement("span");
-    timeSpan.className = "timestamp";
-    timeSpan.textContent = getCurrentTime();
-    bubble.appendChild(timeSpan);
-    
-    wrapper.appendChild(bubble);
-    chatMessages.appendChild(wrapper);
-    scrollToBottom();
+function resetResumeAnalyzer() {
+    selectedResumeFile = null;
+    document.getElementById('resume-results-view').classList.add('hidden');
+    document.getElementById('resume-upload-view').classList.remove('hidden');
 }
 
-// Add a User Message bubble
-function addUserMessage(text) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "message-wrapper user";
-    
-    const bubble = document.createElement("div");
-    bubble.className = "message-bubble";
-    bubble.textContent = text;
-    
-    const timeSpan = document.createElement("span");
-    timeSpan.className = "timestamp";
-    timeSpan.textContent = getCurrentTime();
-    bubble.appendChild(timeSpan);
-    
-    wrapper.appendChild(bubble);
-    chatMessages.appendChild(wrapper);
-    scrollToBottom();
-}
+// ── INTERVIEW ASSISTANT ──
+let interviewType = 'Technical';
+let interviewTurn = 0;
+let interviewTranscript = [];
 
-// Add a System notification bubble
-function addSystemNotification(text) {
-    const notif = document.createElement("div");
-    notif.style.textAlign = "center";
-    notif.style.fontSize = "0.75rem";
-    notif.style.color = "var(--text-muted)";
-    notif.style.margin = "8px 0";
-    notif.innerHTML = `<i class="fa-solid fa-info-circle"></i> ${text}`;
-    chatMessages.appendChild(notif);
-    scrollToBottom();
-}
-
-// Set Quick Reply Chips
-function setQuickReplies(options) {
-    quickOptionsContainer.innerHTML = "";
-    options.forEach(opt => {
-        const btn = document.createElement("button");
-        btn.className = "option-chip";
-        btn.innerHTML = `${opt.text} <i class="fa-solid fa-chevron-right"></i>`;
-        btn.addEventListener("click", () => {
-            chatInput.value = opt.value;
-            handleUserSubmit();
-        });
-        quickOptionsContainer.appendChild(btn);
+function selectInterviewType(type) {
+    interviewType = type;
+    document.querySelectorAll('#interview-setup-view button').forEach(b => {
+        b.className = "p-4 bg-white/[0.02] border-2 border-transparent text-gray-300 rounded-xl text-left hover:scale-[1.02] transition-all";
     });
+    
+    let activeBtnId = 'btn-int-tech';
+    let activeBorderColor = 'border-brand-500/30 bg-brand-500/15 text-brand-300';
+    if (type === 'HR') {
+        activeBtnId = 'btn-int-hr';
+        activeBorderColor = 'border-emerald-500/30 bg-emerald-500/15 text-emerald-300';
+    } else if (type === 'Coding') {
+        activeBtnId = 'btn-int-coding';
+        activeBorderColor = 'border-purple-500/30 bg-purple-500/15 text-purple-300';
+    }
+    
+    document.getElementById(activeBtnId).className = `p-4 border-2 ${activeBorderColor} rounded-xl text-left hover:scale-[1.02] transition-all`;
 }
 
-// Typing Indicator Helpers
-function showTypingIndicator() {
-    removeTypingIndicator(); // Ensure no duplicates
-    const wrapper = document.createElement("div");
-    wrapper.className = "message-wrapper bot";
-    wrapper.id = "typingIndicatorWrapper";
+function triggerStartInterview() {
+    document.getElementById('interview-setup-view').classList.add('hidden');
+    document.getElementById('interview-chat-view').classList.remove('hidden');
     
-    const bubble = document.createElement("div");
-    bubble.className = "message-bubble";
+    document.getElementById('interview-type-header').innerText = `${interviewType.toUpperCase()} INTERVIEW`;
     
-    const indicator = document.createElement("div");
-    indicator.className = "typing-indicator";
-    indicator.innerHTML = `
-        <span class="typing-dot"></span>
-        <span class="typing-dot"></span>
-        <span class="typing-dot"></span>
-    `;
+    interviewTurn = 0;
+    const initialQuestion = STATE.interviewSession.typeQuestions[interviewType][0];
+    interviewTranscript = [
+        { role: 'assistant', content: initialQuestion }
+    ];
     
-    bubble.appendChild(indicator);
-    wrapper.appendChild(bubble);
-    chatMessages.appendChild(wrapper);
-    scrollToBottom();
+    renderInterviewChatHistory();
+    updateInterviewProgress();
 }
 
-function removeTypingIndicator() {
-    const indicator = document.getElementById("typingIndicatorWrapper");
-    if (indicator) {
-        indicator.remove();
+function updateInterviewProgress() {
+    // 5 questions, so turns range 0-4. Total turns in progress = (turn * 20)%
+    const percent = Math.min(((interviewTurn + 1) / 5) * 100, 100);
+    document.getElementById('interview-progress-bar').style.width = `${percent}%`;
+}
+
+function renderInterviewChatHistory() {
+    const container = document.getElementById('interview-chat-history');
+    container.innerHTML = '';
+    
+    interviewTranscript.forEach(t => {
+        const isUser = t.role === 'user';
+        const item = document.createElement('div');
+        item.className = `flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`;
+        item.innerHTML = `
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isUser ? 'bg-brand-500/20 text-brand-400' : 'bg-surface-600 text-purple-400'}">
+                <i class="fa-solid ${isUser ? 'fa-user' : 'fa-robot'} text-xs"></i>
+            </div>
+            <div class="max-w-[80%] px-4 py-3 rounded-2xl text-xs leading-relaxed ${isUser ? 'bg-brand-500/10 border border-brand-500/20 text-white rounded-tr-none' : 'bg-surface-700 border border-white/[0.06] text-gray-200 rounded-tl-none'}">
+                ${t.content}
+            </div>
+        `;
+        container.appendChild(item);
+    });
+    
+    setTimeout(() => {
+        container.scrollTop = container.scrollHeight;
+    }, 50);
+}
+
+function submitInterviewAnswer() {
+    const input = document.getElementById('interview-answer-input');
+    const answer = input.value.trim();
+    if (!answer) return;
+    
+    input.value = '';
+    interviewTranscript.push({ role: 'user', content: answer });
+    renderInterviewChatHistory();
+    
+    interviewTurn++;
+    if (interviewTurn >= 5) {
+        // Complete interview and generate report
+        triggerCompleteInterview();
+    } else {
+        // Retrieve next question
+        const container = document.getElementById('interview-chat-history');
+        const typ = document.createElement('div');
+        typ.className = "flex gap-2 items-center text-xs text-gray-500 py-1";
+        typ.id = "interview-typing";
+        typ.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-brand-400"></i> Interviewer is formulating follow-up question...`;
+        container.appendChild(typ);
+        container.scrollTop = container.scrollHeight;
+        
+        setTimeout(() => {
+            const el = document.getElementById('interview-typing');
+            if (el) el.remove();
+            
+            const nextQuestion = STATE.interviewSession.typeQuestions[interviewType][interviewTurn];
+            interviewTranscript.push({ role: 'assistant', content: nextQuestion });
+            renderInterviewChatHistory();
+            updateInterviewProgress();
+        }, 1000);
     }
 }
 
-// Scroll to bottom helper
-function scrollToBottom() {
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+function triggerCompleteInterview() {
+    document.getElementById('interview-chat-view').classList.add('hidden');
+    
+    const reportView = document.getElementById('interview-report-view');
+    reportView.classList.remove('hidden');
+    
+    document.getElementById('interview-final-score').innerHTML = `86<span class="text-sm text-gray-500 font-semibold">/100</span>`;
+    document.getElementById('interview-report-summary').innerText = `You completed the ${interviewType} Assessment Session. Your responses showed an excellent grasp of theoretical paradigms and architectural requirements, though minor coding optimizations can be added.`;
+    
+    const strengths = ["Direct answers with clear structures", "Strong conceptual base in scaling databases", "Uses precise industry terms"];
+    const improvements = ["Mention explicit system constraints", "Clarify fallback pathways for network partition scenarios"];
+    
+    document.getElementById('interview-report-strengths').innerHTML = strengths.map(s => `<li class="text-[11px] text-gray-300 flex items-start gap-1.5"><i class="fa-solid fa-circle-check text-emerald-400 mt-0.5"></i>${s}</li>`).join('');
+    document.getElementById('interview-report-improvements').innerHTML = improvements.map(s => `<li class="text-[11px] text-gray-300 flex items-start gap-1.5"><i class="fa-solid fa-circle-exclamation text-amber-400 mt-0.5"></i>${s}</li>`).join('');
 }
 
-// Time formatter (HH:MM AM/PM)
-function getCurrentTime() {
-    const now = new Date();
-    let hours = now.getHours();
-    let minutes = now.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12;
-    hours = hours ? hours : 12;
-    minutes = minutes < 10 ? '0' + minutes : minutes;
-    return `${hours}:${minutes} ${ampm}`;
+function resetInterview() {
+    document.getElementById('interview-chat-view').classList.add('hidden');
+    document.getElementById('interview-report-view').classList.add('hidden');
+    document.getElementById('interview-setup-view').classList.remove('hidden');
 }
+
+// ── PROJECT RECOMMENDATION ──
+function renderProjectSkillsPicker() {
+    const container = document.getElementById('project-skills-list');
+    container.innerHTML = '';
+    
+    CAREER_SKILLS_LIST.forEach(s => {
+        const active = STATE.projectSkills.includes(s);
+        const btn = document.createElement('button');
+        btn.onclick = () => toggleProjectSkill(s);
+        btn.className = `px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${active ? 'bg-brand-500/20 border-brand-500/30 text-brand-300' : 'bg-surface-700/50 border-white/[0.08] text-gray-400'}`;
+        btn.innerText = s;
+        container.appendChild(btn);
+    });
+}
+
+function toggleProjectSkill(skill) {
+    if (STATE.projectSkills.includes(skill)) {
+        STATE.projectSkills = STATE.projectSkills.filter(s => s !== skill);
+    } else {
+        STATE.projectSkills.push(skill);
+    }
+    renderProjectSkillsPicker();
+}
+
+let activeProjDiff = 'Intermediate';
+function selectProjDiff(diff) {
+    activeProjDiff = diff;
+    document.querySelectorAll('#page-projects button[id^="btn-diff-"]').forEach(b => {
+        b.className = "flex-1 py-1.5 border border-white/[0.08] hover:bg-white/[0.02] text-xs font-semibold text-gray-400 rounded-lg transition-all";
+    });
+    
+    let btnId = 'btn-diff-int';
+    if (diff === 'Beginner') btnId = 'btn-diff-beg';
+    if (diff === 'Advanced') btnId = 'btn-diff-adv';
+    
+    document.getElementById(btnId).className = "flex-1 py-1.5 border border-brand-500/20 bg-brand-500/10 text-brand-300 text-xs font-semibold rounded-lg transition-all";
+}
+
+function triggerProjectRecommend() {
+    const results = document.getElementById('project-results-view');
+    results.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-10 text-center">
+            <i class="fa-solid fa-spinner fa-spin text-brand-500 text-2xl mb-2"></i>
+            <p class="text-xs text-gray-400">LLM matching technology stack frameworks...</p>
+        </div>
+    `;
+    
+    setTimeout(() => {
+        results.innerHTML = '';
+        const list = [
+            {
+                title: "Internal Vector Semantic Indexer",
+                desc: "Develop a secure corporate document indexer with pgvector, complete with sliding chunking rules and visual search results match logs.",
+                diff: activeProjDiff,
+                hours: 45,
+                stack: ["Python", "FastAPI", "pgvector", "Docker"],
+                milestones: [
+                    { step: "Phase 1: Database models configuration", desc: "Build declarative models mapping documents and vector chunks." },
+                    { step: "Phase 2: Parser hooks implementation", desc: "Write parsing hooks matching word documents and spreadsheets." }
+                ]
+            }
+        ];
+        
+        list.forEach(p => {
+            const card = document.createElement('div');
+            card.className = "glass-card p-5 rounded-xl space-y-3";
+            card.innerHTML = `
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <h4 class="font-bold text-white text-sm">${p.title}</h4>
+                        <p class="text-[11px] text-gray-400 mt-1">${p.desc}</p>
+                    </div>
+                    <div class="flex flex-col items-end gap-1.5 shrink-0 text-right">
+                        <span class="badge text-[9px] bg-brand-500/10 text-brand-300 border border-brand-500/20 px-2 py-0.5 rounded">${p.diff}</span>
+                        <span class="text-[10px] text-gray-600 font-medium"><i class="fa-solid fa-clock mr-1"></i>${p.hours} Hours</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="text-[10px] text-gray-500 font-bold uppercase mr-1">Stack:</span>
+                    ${p.stack.map(s => `<span class="badge text-[9px] bg-surface-600 text-gray-300 px-2 py-0.5 rounded border border-white/[0.04]">${s}</span>`).join('')}
+                </div>
+                <div class="space-y-2.5 border-t border-white/[0.04] pt-3">
+                    ${p.milestones.map((m, j) => `
+                        <div class="flex gap-2 text-xs">
+                            <span class="w-4.5 h-4.5 rounded-full bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-400 text-[10px] font-bold shrink-0 mt-0.5">${j+1}</span>
+                            <div>
+                                <span class="font-semibold text-white text-[11px] block">${m.step}</span>
+                                <span class="text-[10px] text-gray-500 leading-relaxed">${m.desc}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            results.appendChild(card);
+        });
+    }, 1000);
+}
+
+// ── ADMIN PANEL & HEALTH DIAGNOSTICS ──
+function switchAdminTab(subTab) {
+    activeAdminTab = subTab;
+    document.querySelectorAll('#page-admin button[id^="btn-adm-"]').forEach(b => {
+        b.className = "px-4 py-1.5 text-gray-400 hover:text-white rounded-lg text-xs font-semibold transition-all";
+    });
+    
+    document.getElementById(`btn-adm-${subTab}`).className = "px-4 py-1.5 bg-brand-500/10 text-brand-400 border border-brand-500/20 rounded-lg text-xs font-semibold transition-all";
+    
+    document.querySelectorAll('.admin-tab-content').forEach(p => p.classList.add('hidden'));
+    document.getElementById(`admin-${subTab}`).classList.remove('hidden');
+}
+
+function renderAdminOverview() {
+    const list = document.getElementById('admin-audit-logs');
+    list.innerHTML = '';
+    
+    const logs = [
+        { action: "USER_LOGIN_SUCCESS", user: "admin@company.private", date: "Just Now" },
+        { action: "DOCUMENT_UPLOAD", user: "hr_manager@company.private", date: "15 min ago" },
+        { action: "CAREER_ASSESSMENT", user: "employee_12@company.private", date: "1 hour ago" },
+        { action: "VECTOR_DB_SEARCH", user: "system_agent", date: "2 hours ago" }
+    ];
+    
+    logs.forEach(l => {
+        const item = document.createElement('div');
+        item.className = "flex items-center justify-between text-xs py-2 border-b border-white/[0.04] last:border-0";
+        item.innerHTML = `
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-shield-halved text-brand-400 text-[10px]"></i>
+                <span class="font-medium text-gray-300">${l.action}</span>
+                <span class="text-[10px] text-gray-600">(${l.user})</span>
+            </div>
+            <span class="text-[10px] text-gray-600">${l.date}</span>
+        `;
+        list.appendChild(item);
+    });
+}
+
+const MOCK_USERS = [
+    { id: 1, name: "Admin User", email: "admin@company.private", role: "Super Admin", active: true },
+    { id: 2, name: "HR Manager", email: "hr@company.private", role: "HR", active: true },
+    { id: 3, name: "John Doe", email: "john@company.private", role: "Employee", active: true },
+    { id: 4, name: "Jane Smith", email: "jane@company.private", role: "Student", active: false }
+];
+
+function renderAdminUsersTable() {
+    const table = document.getElementById('admin-user-table');
+    table.innerHTML = '';
+    
+    MOCK_USERS.forEach(u => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-white/[0.02]";
+        
+        tr.innerHTML = `
+            <td class="py-3 px-5">
+                <p class="font-semibold text-white">${u.name}</p>
+                <p class="text-[10px] text-gray-500">${u.email}</p>
+            </td>
+            <td class="py-3 px-4">
+                <select onchange="alert('Role updated!')" class="bg-surface-700 border border-white/[0.08] text-gray-300 rounded px-2 py-0.5 text-xs outline-none">
+                    <option ${u.role==='Super Admin'?'selected':''}>Super Admin</option>
+                    <option ${u.role==='Admin'?'selected':''}>Admin</option>
+                    <option ${u.role==='HR'?'selected':''}>HR</option>
+                    <option ${u.role==='Employee'?'selected':''}>Employee</option>
+                    <option ${u.role==='Student'?'selected':''}>Student</option>
+                </select>
+            </td>
+            <td class="py-3 px-4">
+                <button onclick="toggleMockUserStatus(${u.id})" class="flex items-center gap-1">
+                    ${u.active ? `<i class="fa-solid fa-toggle-on text-emerald-400 text-base"></i><span class="text-[10px] text-emerald-400">Active</span>` : `<i class="fa-solid fa-toggle-off text-gray-600 text-base"></i><span class="text-[10px] text-gray-500">Inactive</span>`}
+                </button>
+            </td>
+            <td class="py-3 px-5 text-right">
+                <button onclick="alert('User accounts deletion requires Super Admin verification.')" class="p-1 hover:bg-red-500/20 text-gray-600 hover:text-red-400 rounded transition-all">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </td>
+        `;
+        table.appendChild(tr);
+    });
+}
+
+function toggleMockUserStatus(id) {
+    const user = MOCK_USERS.find(u => u.id === id);
+    if (user) {
+        user.active = !user.active;
+        renderAdminUsersTable();
+    }
+}
+
+// Simulated hardware telemetry loop
+setInterval(() => {
+    if (activeTab === 'admin' && activeAdminTab === 'diagnostics') {
+        const cpu = Math.floor(20 + Math.random() * 15);
+        const mem = Math.floor(60 + Math.random() * 5);
+        
+        document.getElementById('cpu-percent-lbl').innerText = `${cpu}%`;
+        document.getElementById('cpu-bar-prog').style.width = `${cpu}%`;
+        
+        document.getElementById('mem-percent-lbl').innerText = `${mem}%`;
+        document.getElementById('mem-bar-prog').style.width = `${mem}%`;
+    }
+}, 2000);
+
+// ── INITIALIZER ──
+window.onload = () => {
+    switchTab('chat');
+};
