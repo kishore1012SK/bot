@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { api, Conversation, Message } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import {
   Send, Plus, Trash2, Download, Search, Bot, User,
-  Copy, Check, ChevronDown, X, Loader2, Database
+  Copy, Check, X, Loader2, Database
 } from 'lucide-react'
 
 // ── Simple Markdown renderer ──────────────────────────────────────────────
@@ -93,7 +93,6 @@ export default function ChatPage() {
   const [error, setError] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
-  const wsRef = useRef<WebSocket | null>(null)
 
   useEffect(() => { loadConversations() }, [])
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])

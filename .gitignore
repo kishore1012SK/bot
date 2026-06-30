@@ -1,0 +1,15 @@
+# Node modules and package manager files
+frontend/node_modules/
+frontend/package-lock.json
+
+# Production build output
+frontend/dist/
+
+# Python caches
+__pycache__/
+*.py[cod]
+
+# Editor and OS files
+.vscode/
+.DS_Store
+thumbs.db

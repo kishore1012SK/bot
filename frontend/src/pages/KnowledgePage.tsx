@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { api, Document } from '../services/api'
 import { Upload, Trash2, Search, Tag, FolderOpen, FileText, Loader2, X, CheckCircle } from 'lucide-react'
 

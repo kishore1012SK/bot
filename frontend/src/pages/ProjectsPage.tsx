@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { api } from '../services/api'
-import { FolderGit2, Sparkles, Clock, Layers, ChevronRight, Loader2, X } from 'lucide-react'
+import { FolderGit2, Sparkles, Clock, Layers, Loader2, X } from 'lucide-react'
 
 const DIFFICULTY_CONFIG = {
   Beginner:     { color: 'text-emerald-400', bg: 'bg-emerald-500/15', border: 'border-emerald-500/30' },

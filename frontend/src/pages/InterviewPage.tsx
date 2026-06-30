@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { api } from '../services/api'
-import { Mic, Play, Send, Star, CheckCircle, AlertCircle, Loader2, X, Bot, User } from 'lucide-react'
+import { Mic, Play, Send, CheckCircle, AlertCircle, Loader2, X, Bot, User } from 'lucide-react'
 
 type InterviewType = 'Technical' | 'HR' | 'Coding'
 
@@ -98,7 +98,6 @@ export default function InterviewPage() {
   }
 
   const history = session.chat_history || []
-  const lastMsg = history[history.length - 1]
   const progress = Math.round((history.length / 10) * 100)
 
   return (

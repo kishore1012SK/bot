@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { api } from '../services/api'
 import { TrendingUp, Loader2, CheckCircle, ChevronRight, BookOpen, Map, X } from 'lucide-react'
 
