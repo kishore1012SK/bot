@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import {
   Brain, MessageSquare, BookOpen, TrendingUp, FileText,
   Mic, FolderGit2, LayoutDashboard, LogOut, ChevronLeft,
-  ChevronRight, User, Zap
+  ChevronRight, User
 } from 'lucide-react'
 
 export type PageKey = 'chat' | 'knowledge' | 'career' | 'resume' | 'interview' | 'projects' | 'admin'

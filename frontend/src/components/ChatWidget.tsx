@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, MessageSquare, X, Bot, User, Database, Loader2 } from 'lucide-react';
+import { Send, MessageSquare, X, Bot, User } from 'lucide-react';
 
 interface ChatWidgetProps {
   apiUrl?: string;
@@ -26,7 +26,7 @@ export default function ChatWidget({
   defaultRAG = true
 }: ChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [ragEnabled, setRagEnabled] = useState(defaultRAG);
+  const [ragEnabled] = useState(defaultRAG);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
